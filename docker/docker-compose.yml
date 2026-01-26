@@ -1,0 +1,74 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: wiki-postgres
+    environment:
+      POSTGRES_DB: wiki_dev
+      POSTGRES_USER: wiki_user
+      POSTGRES_PASSWORD: wiki_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wiki_user -d wiki_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wiki-network
+
+  backend:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile.dev
+    container_name: wiki-backend
+    environment:
+      DATABASE_URL: postgresql://wiki_user:wiki_password@postgres:5432/wiki_dev
+      JWT_SECRET: dev_jwt_secret_min_32_characters_long_change_in_production
+      JWT_REFRESH_SECRET: dev_refresh_secret_min_32_characters_long_change_in_production
+      JWT_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
+      NODE_ENV: development
+      PORT: 3000
+      CORS_ORIGIN: http://localhost:5173
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../backend:/app/backend
+      - backend_node_modules:/app/backend/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - wiki-network
+    command: sh -c "cd /app/backend && bun run dev"
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../docker/Dockerfile.frontend.dev
+    container_name: wiki-frontend
+    environment:
+      VITE_API_URL: http://localhost:3000/api
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../frontend:/app
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - wiki-network
+    command: bun run dev --host
+
+networks:
+  wiki-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  backend_node_modules:
+  frontend_node_modules:

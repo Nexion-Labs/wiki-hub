@@ -1,0 +1,73 @@
+# Root .dockerignore for unified build
+
+# Node modules (will be installed in container)
+**/node_modules
+**/npm-debug.log
+**/yarn-error.log
+**/bun.lockb.bak
+
+# Build artifacts
+**/dist
+**/build
+**/.vite
+**/.cache
+
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.prod.example
+!.env.docker.example
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+**/coverage
+**/.nyc_output
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+**/__tests__
+**/__mocks__
+
+# Documentation
+*.md
+!README.md
+docs
+CHANGELOG.md
+
+# Docker files (except the main ones being used)
+docker
+backend/Dockerfile
+backend/Dockerfile.dev
+frontend/Dockerfile
+frontend/Dockerfile.dev
+docker-compose.yml
+docker-compose.dev.yml
+.dockerignore
+
+# Logs
+**/*.log
+**/*.pid
+**/*.seed
+**/*.pid.lock
+
+# Misc
+.github
+.gitlab-ci.yml
+.travis.yml
+scripts/deploy.sh
+Makefile
+backups

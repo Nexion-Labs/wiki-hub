@@ -1,0 +1,11 @@
+[install]
+# Set a maximum number of concurrent HTTP requests for package downloads
+max = 10
+
+[test]
+# Enable coverage reporting
+coverage = true
+
+[run]
+# Enable hot reloading in development
+hot = true
