@@ -1,10 +1,10 @@
 version: '3.9'
 
-# Development override for docker-compose.yml
-# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+# Development docker-compose for Wiki Hub
+# Usage: docker compose -f docker-compose.dev.yml up
 
 services:
-  # Database - same as production
+  # Database
   database:
     image: postgres:16-alpine
     container_name: wiki-database-dev
@@ -21,12 +21,12 @@ services:
     networks:
       - wiki-network-dev
 
-  # Backend - Development mode with hot reload
-  backend:
+  # Wiki Hub App - Development mode with hot reload
+  app:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile.dev
-    container_name: wiki-backend-dev
+    container_name: wiki-app-dev
     restart: unless-stopped
     depends_on:
       - database
@@ -35,43 +35,22 @@ services:
       PORT: 3000
       DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@database:5432/${DB_NAME:-wikidb}
       JWT_SECRET: ${JWT_SECRET:-dev-secret-key}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
     ports:
-      - "${BACKEND_PORT:-3000}:3000"
+      - "${APP_PORT:-3000}:3000"
     networks:
       - wiki-network-dev
     volumes:
       # Mount source code for hot reload
-      - ./backend/src:/app/src:ro
-      - ./backend/package.json:/app/package.json:ro
-      - backend_logs_dev:/app/logs
-    command: ["bun", "--watch", "src/index.ts"]
-
-  # Frontend - Development mode with Vite dev server
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-    container_name: wiki-frontend-dev
-    restart: unless-stopped
-    depends_on:
-      - backend
-    environment:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api}
-    ports:
-      - "${FRONTEND_PORT:-5173}:5173"
-    networks:
-      - wiki-network-dev
-    volumes:
-      # Mount source code for hot reload
-      - ./frontend/src:/app/src:ro
-      - ./frontend/public:/app/public:ro
-      - ./frontend/index.html:/app/index.html:ro
-      - ./frontend/package.json:/app/package.json:ro
-      - ./frontend/vite.config.ts:/app/vite.config.ts:ro
-      - ./frontend/tsconfig.json:/app/tsconfig.json:ro
-      - ./frontend/tsconfig.node.json:/app/tsconfig.node.json:ro
+      - ./src:/app/src:ro
+      - ./public:/app/public:ro
+      - ./package.json:/app/package.json:ro
+      - ./vite.config.ts:/app/vite.config.ts:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./tailwind.config.js:/app/tailwind.config.js:ro
+      - ./postcss.config.js:/app/postcss.config.js:ro
     command: ["bun", "run", "dev", "--host", "0.0.0.0"]
 
 networks:
@@ -80,6 +59,4 @@ networks:
 
 volumes:
   postgres_data_dev:
-    driver: local
-  backend_logs_dev:
     driver: local

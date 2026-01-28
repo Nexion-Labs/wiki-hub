@@ -1,255 +1,151 @@
-# Wiki Application with EOL Software Management
+# Wiki Hub - Full-Stack Application
 
-Full-stack wiki application with End-of-Life software tracking, built on Bun runtime, PostgreSQL, featuring role-based access control, version history, markdown editing, and containerized deployment.
+A unified full-stack application built with TanStack Start, featuring:
+- Wiki pages with markdown support
+- EOL (End of Life) tracker for software versions
+- User authentication with JWT
+- Role-based access control
 
 ## Tech Stack
 
-### Backend
-- **Runtime:** Bun
-- **Framework:** Elysia.js
-- **ORM:** Drizzle ORM
-- **Database:** PostgreSQL 16
-- **Authentication:** JWT with HTTP-only cookies
-
-### Frontend
-- **Framework:** React 19 + Vite
-- **UI Library:** Tailwind CSS (shadcn/ui to be added)
-- **State Management:** TanStack Query + Zustand
-- **HTTP Client:** Axios
-
-## Features
-
-### Authentication & Authorization
-- JWT-based authentication with refresh tokens
-- 4 roles: Admin, Editor, Contributor, Viewer
-- HTTP-only cookies for security
-
-### Wiki Management
-- CRUD operations for wiki articles
-- Markdown support with live preview
-- Version history and comparison
-- Categories and tags
-- Full-text search
-
-### EOL Software Tracking
-- Database of software products with EOL dates
-- Version lifecycle tracking
-- Alert subscription system
-- Migration guide linking
-
-## Getting Started
-
-### Prerequisites
-- Bun 1.0+
-- Docker & Docker Compose
-- PostgreSQL 16 (if running without Docker)
-
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone <repository-url>
-cd wiki-bun
-```
-
-2. **Set up environment variables**
-```bash
-cp .env.example .env.development
-# Edit .env.development with your configuration
-```
-
-3. **Install dependencies**
-
-Backend:
-```bash
-cd backend
-bun install
-```
-
-Frontend:
-```bash
-cd frontend
-bun install
-```
-
-### Running with Docker (Recommended)
-
-```bash
-# Start all services (PostgreSQL, Backend, Frontend)
-cd docker
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop all services
-docker-compose down
-```
-
-The application will be available at:
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:3000
-- PostgreSQL: localhost:5432
-
-### Running Locally (Without Docker)
-
-1. **Start PostgreSQL**
-Make sure PostgreSQL 16 is running on port 5432
-
-2. **Run database migrations**
-```bash
-cd backend
-bun run db:generate
-bun run db:migrate
-bun run db:seed
-```
-
-3. **Start the backend**
-```bash
-cd backend
-bun run dev
-```
-
-4. **Start the frontend**
-```bash
-cd frontend
-bun run dev
-```
-
-## Database
-
-### Migrations
-
-Generate new migration:
-```bash
-cd backend
-bun run db:generate
-```
-
-Run migrations:
-```bash
-bun run db:migrate
-```
-
-### Seeding
-
-Seed initial data (roles and admin user):
-```bash
-cd backend
-bun run db:seed
-```
-
-Default admin credentials:
-- Email: `admin@wiki-app.com`
-- Password: `admin123`
-
-**⚠️ Change the password after first login!**
+- **Framework**: [TanStack Start](https://tanstack.com/start)
+- **Router**: [TanStack Router](https://tanstack.com/router)
+- **Data Fetching**: [TanStack Query](https://tanstack.com/query)
+- **Database**: PostgreSQL with [Drizzle ORM](https://orm.drizzle.team/)
+- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
+- **Build**: [Vinxi](https://vinxi.dev/)
 
 ## Project Structure
 
 ```
-wiki-bun/
-├── backend/              # Backend API (Elysia.js + Drizzle)
-│   ├── src/
-│   │   ├── db/           # Database schema, migrations, seeds
-│   │   ├── routes/       # API routes
+frontend/
+├── src/
+│   ├── routes/           # TanStack Router file-based routes
+│   │   ├── __root.tsx    # Root layout with navigation
+│   │   ├── index.tsx     # Home page (EOL tracker)
+│   │   ├── login.tsx     # Login page
+│   │   ├── wiki/         # Wiki pages
+│   │   ├── eol/          # EOL detail pages
+│   │   ├── dashboard/    # User dashboard
+│   │   └── admin/        # Admin pages
+│   ├── server/           # Server-side code
+│   │   ├── functions/    # TanStack Start server functions
 │   │   ├── services/     # Business logic
-│   │   ├── middleware/   # Auth, RBAC, etc.
-│   │   └── utils/        # Utilities
-│   └── tests/            # Tests
-│
-├── frontend/             # Frontend (React + Vite)
-│   ├── src/
-│   │   ├── components/   # React components
-│   │   ├── pages/        # Page components
-│   │   ├── api/          # API client
-│   │   ├── hooks/        # Custom hooks
-│   │   └── stores/       # Zustand stores
-│   └── public/           # Static assets
-│
-└── docker/               # Docker configuration
-    ├── docker-compose.yml
-    ├── Dockerfile.dev
-    └── init-scripts/     # Database init scripts
+│   │   ├── repositories/ # Data access layer
+│   │   ├── db/           # Database configuration
+│   │   │   ├── schema/   # Drizzle schema definitions
+│   │   │   ├── migrations/
+│   │   │   └── seeds/
+│   │   ├── utils/        # Utility functions
+│   │   └── validators/   # Input validation
+│   ├── router.tsx        # Router configuration
+│   ├── routeTree.gen.ts  # Generated route tree
+│   ├── entry-client.tsx  # Client entry point
+│   └── entry-server.tsx  # Server entry point
+├── app.config.ts         # TanStack Start configuration
+├── drizzle.config.ts     # Drizzle Kit configuration
+└── package.json
 ```
 
-## Development
+## Getting Started
 
-### Backend Development
+### Prerequisites
+
+- Node.js 18+ (or Bun)
+- PostgreSQL database
+
+### Environment Setup
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Update the `.env` file with your configuration:
+   ```env
+   DATABASE_URL=postgres://user:password@localhost:5432/wiki_hub
+   JWT_SECRET=your-secret-key
+   JWT_EXPIRES_IN=15m
+   JWT_REFRESH_EXPIRES_IN=7d
+   ```
+
+### Installation
 
 ```bash
-cd backend
-bun run dev              # Start development server with hot reload
-bun test                 # Run tests
-bun run db:studio        # Open Drizzle Studio (database GUI)
+# Install dependencies
+npm install
+
+# Generate database migrations
+npm run db:generate
+
+# Apply migrations
+npm run db:migrate
+
+# Seed the database
+npm run db:seed
 ```
 
-### Frontend Development
+### Development
 
 ```bash
-cd frontend
-bun run dev              # Start Vite dev server
-bun run build            # Build for production
-bun run preview          # Preview production build
+# Start development server
+npm run dev
 ```
 
-## API Endpoints
+The app will be available at `http://localhost:3000`
+
+### Production
+
+```bash
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
+
+## Features
 
 ### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login
-- `POST /api/auth/logout` - Logout
-- `POST /api/auth/refresh` - Refresh access token
-- `GET /api/auth/me` - Get current user
+- JWT-based authentication with access/refresh token rotation
+- Secure HTTP-only cookies for token storage
+- Role-based access control (admin, editor, contributor, viewer)
 
-### Wiki Pages
-- `GET /api/wiki/pages` - List all pages
-- `GET /api/wiki/pages/:slug` - Get page by slug
-- `POST /api/wiki/pages` - Create new page
-- `PUT /api/wiki/pages/:id` - Update page
-- `DELETE /api/wiki/pages/:id` - Delete page
+### Wiki
+- Create, edit, and delete wiki pages
+- Markdown support with HTML preview
+- Version history with diff tracking
+- Categories and tags
 
-### EOL Management
-- `GET /api/eol/products` - List products
-- `GET /api/eol/versions` - List versions
-- `POST /api/eol/alerts` - Subscribe to alerts
+### EOL Tracker
+- Track software product versions
+- Set EOL dates and get alerts
+- Dashboard for expiring versions
 
-(More endpoints to be documented as they're implemented)
+## API (Server Functions)
 
-## Testing
+Server functions are automatically available through TanStack Start:
 
-Run tests:
-```bash
-# Backend tests
-cd backend
-bun test
+- **Auth**: `login`, `register`, `logout`, `getCurrentUser`, `refreshTokens`
+- **Wiki**: `listPages`, `getPage`, `createPage`, `updatePage`, `deletePage`
+- **EOL**: `listProducts`, `getProduct`, `createProduct`, `getVersionsByProduct`
+- **Users**: `listUsers`, `getUser`, `updateUser`, `updateUserRole`
 
-# Frontend tests (to be added)
-cd frontend
-bun test
-```
-
-## Deployment
-
-### Production Docker Build
+## Database Commands
 
 ```bash
-# Build and start production containers
-cd docker
-docker-compose -f docker-compose.prod.yml up -d
+# Generate migrations from schema changes
+npm run db:generate
+
+# Apply migrations
+npm run db:migrate
+
+# Push schema directly (dev only)
+npm run db:push
+
+# Open Drizzle Studio
+npm run db:studio
+
+# Run seeds
+npm run db:seed
 ```
-
-## Contributing
-
-1. Create a feature branch
-2. Make your changes
-3. Write tests
-4. Submit a pull request
-
-## License
-
-[License to be determined]
-
-## Support
-
-For issues and questions, please open an issue on GitHub.
