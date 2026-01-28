@@ -294,12 +294,12 @@ function AdminEOLPage() {
                     size="sm"
                     onClick={() => setShowNewVersion(showNewVersion === product.id ? null : product.id)}
                   >
-                    {showNewVersion === product.id ? 'Đóng' : 'Thêm version'}
+                    {showNewVersion === product.id ? 'Đóng' : 'Thêm phiên bản'}
                   </Button>
                   {deleteConfirm === product.id ? (
                     <div className="flex items-center gap-2">
                       <Button
-                        variant="danger"
+                        variant="primary"
                         size="sm"
                         onClick={() => deleteProductMutation.mutate(product.id)}
                         isLoading={deleteProductMutation.isPending}
@@ -398,7 +398,7 @@ function AdminEOLPage() {
                         variant='primary'
                         isLoading={createVersionMutation.isPending}
                       >
-                        Thêm version
+                        Thêm phiên bản
                       </Button>
                       <Button
                         type="button"
