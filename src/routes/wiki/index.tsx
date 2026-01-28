@@ -57,7 +57,7 @@ function WikiListPage() {
           </p>
         </div>
         <Link to="/wiki/new">
-          <Button leftIcon={<span>✏️</span>}>
+          <Button>
             Tạo bài viết mới
           </Button>
         </Link>

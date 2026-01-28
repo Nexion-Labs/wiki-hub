@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { listProducts, createProductFn, deleteProductFn, createVersionFn, getVersionsByProduct } from '../../server/functions/eol';
+import { listProducts, createProductFn, deleteProductFn, createVersionFn, updateVersionFn, deleteVersionFn, getVersionsByProduct } from '../../server/functions/eol';
 import { getSessionUser } from '../../server/functions/auth';
-import { Button, Input, Textarea, Card, CardHeader, Badge, LoadingState, EmptyState, Alert } from '../../components';
+import { Button, Input, Textarea, Card, CardHeader, Badge, LoadingState, EmptyState, Alert, Select, ConfirmDialog } from '../../components';
+import { LIFECYCLE_STAGE_OPTIONS } from '../../types/eol';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -11,9 +12,10 @@ function AdminEOLPage() {
   const queryClient = useQueryClient();
   const [showNewProduct, setShowNewProduct] = useState(false);
   const [showNewVersion, setShowNewVersion] = useState<string | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const [newProduct, setNewProduct] = useState({ name: '', vendor: '', description: '' });
-  const [newVersion, setNewVersion] = useState({ version: '', eolDate: '', releaseDate: '' });
+  const [editingVersion, setEditingVersion] = useState<any>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; productId: string } | null>(null);
+  const [newProduct, setNewProduct] = useState({ name: '', vendor: '', description: '', homepageUrl: '', documentationUrl: '' });
+  const [newVersion, setNewVersion] = useState({ version: '', eolDate: '', releaseDate: '', extendedSupportDate: '', lts: false, lifecycleStage: 'active' });
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -33,12 +35,12 @@ function AdminEOLPage() {
   });
 
   const createProductMutation = useMutation({
-    mutationFn: (data: { name: string; vendor?: string; description?: string }) => 
+    mutationFn: (data: { name: string; vendor?: string; description?: string }) =>
       createProductFn({ data: { ...data, userId: user?.id || '' } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['eol-products'] });
       setShowNewProduct(false);
-      setNewProduct({ name: '', vendor: '', description: '' });
+      setNewProduct({ name: '', vendor: '', description: '', homepageUrl: '', documentationUrl: '' });
     },
   });
 
@@ -51,12 +53,37 @@ function AdminEOLPage() {
   });
 
   const createVersionMutation = useMutation({
-    mutationFn: (data: { productId: string; version: string; eolDate?: string; releaseDate?: string }) => 
-      createVersionFn({ data: { ...data, userId: user?.id || '' } }),
+    mutationFn: (data: { productId: string; version: string; eolDate?: string; releaseDate?: string; lts?: boolean; lifecycleStage?: string }) => {
+      const { version, ...rest } = data;
+      return createVersionFn({ data: { ...rest, version, userId: user?.id || '' } });
+    },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['eol-versions', variables.productId] });
       setShowNewVersion(null);
-      setNewVersion({ version: '', eolDate: '', releaseDate: '' });
+      setNewVersion({ version: '', eolDate: '', releaseDate: '', extendedSupportDate: '', lts: false, lifecycleStage: 'active' });
+    },
+  });
+
+  const updateVersionMutation = useMutation({
+    mutationFn: (data: { id: string; version?: string; eolDate?: string; releaseDate?: string; lts?: boolean; lifecycleStage?: string }) =>
+      updateVersionFn({ data }),
+    onSuccess: (_, variables) => {
+      // Find the product ID from the editing version
+      const productId = editingVersion?.productId;
+      if (productId) {
+        queryClient.invalidateQueries({ queryKey: ['eol-versions', productId] });
+      }
+      setEditingVersion(null);
+    },
+  });
+
+  const deleteVersionMutation = useMutation({
+    mutationFn: (data: { id: string }) => deleteVersionFn({ data }),
+    onSuccess: () => {
+      if (deleteConfirm?.productId) {
+        queryClient.invalidateQueries({ queryKey: ['eol-versions', deleteConfirm.productId] });
+      }
+      setDeleteConfirm(null);
     },
   });
 
@@ -117,8 +144,7 @@ function AdminEOLPage() {
             Quản lý {products?.length || 0} sản phẩm và thông tin End of Life
           </p>
         </div>
-        <Button 
-          leftIcon={<span>➕</span>}
+        <Button
           onClick={() => setShowNewProduct(true)}
         >
           Thêm sản phẩm
@@ -144,8 +170,8 @@ function AdminEOLPage() {
       {/* New Product Form */}
       {showNewProduct && (
         <Card className="border-2 border-emerald-200 bg-emerald-50/50">
-          <CardHeader 
-            title="🆕 Thêm sản phẩm mới" 
+          <CardHeader
+            title="Thêm sản phẩm mới"
             description="Điền thông tin sản phẩm cần theo dõi EOL"
           />
           <form
@@ -179,6 +205,22 @@ function AdminEOLPage() {
               rows={3}
               placeholder="Mô tả ngắn gọn về sản phẩm..."
             />
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Input
+                label="🌐 Homepage URL"
+                type="url"
+                value={newProduct.homepageUrl}
+                onChange={(e) => setNewProduct({ ...newProduct, homepageUrl: e.target.value })}
+                placeholder="https://example.com"
+              />
+              <Input
+                label="📚 Documentation URL"
+                type="url"
+                value={newProduct.documentationUrl}
+                onChange={(e) => setNewProduct({ ...newProduct, documentationUrl: e.target.value })}
+                placeholder="https://docs.example.com"
+              />
+            </div>
             <div className="flex gap-3 pt-2">
               <Button
                 type="submit"
@@ -191,7 +233,7 @@ function AdminEOLPage() {
                 variant="ghost"
                 onClick={() => {
                   setShowNewProduct(false);
-                  setNewProduct({ name: '', vendor: '', description: '' });
+                  setNewProduct({ name: '', vendor: '', description: '', homepageUrl: '', documentationUrl: '' });
                 }}
               >
                 Hủy
@@ -209,7 +251,7 @@ function AdminEOLPage() {
               {/* Product Header */}
               <div className="p-4 border-b border-slate-100 flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center text-white font-bold">
+                  <div className="w-10 h-10 bg-linear-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center text-white font-bold">
                     {product.name?.[0]?.toUpperCase() || '?'}
                   </div>
                   <div>
@@ -225,7 +267,7 @@ function AdminEOLPage() {
                     size="sm"
                     onClick={() => setShowNewVersion(showNewVersion === product.id ? null : product.id)}
                   >
-                    {showNewVersion === product.id ? '✕ Đóng' : '➕ Thêm version'}
+                    {showNewVersion === product.id ? 'Đóng' : 'Thêm version'}
                   </Button>
                   {deleteConfirm === product.id ? (
                     <div className="flex items-center gap-2">
@@ -252,7 +294,7 @@ function AdminEOLPage() {
                       onClick={() => setDeleteConfirm(product.id)}
                       className="text-red-600 hover:bg-red-50"
                     >
-                      🗑️
+                      Xóa
                     </Button>
                   )}
                 </div>
@@ -271,7 +313,7 @@ function AdminEOLPage() {
                     }}
                     className="space-y-4"
                   >
-                    <div className="grid sm:grid-cols-3 gap-4">
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       <Input
                         label="Version *"
                         type="text"
@@ -292,11 +334,41 @@ function AdminEOLPage() {
                         value={newVersion.eolDate}
                         onChange={(e) => setNewVersion({ ...newVersion, eolDate: e.target.value })}
                       />
+                      <Input
+                        label="Extended Support"
+                        type="date"
+                        value={newVersion.extendedSupportDate}
+                        onChange={(e) => setNewVersion({ ...newVersion, extendedSupportDate: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <Select
+                        label="Lifecycle Stage *"
+                        value={newVersion.lifecycleStage}
+                        onChange={(e) => setNewVersion({ ...newVersion, lifecycleStage: e.target.value })}
+                        options={LIFECYCLE_STAGE_OPTIONS}
+                        required
+                      />
+                      <div className="flex items-end">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id={`lts-${product.id}`}
+                            checked={newVersion.lts}
+                            onChange={(e) => setNewVersion({ ...newVersion, lts: e.target.checked })}
+                            className="w-4 h-4 text-emerald-600 bg-slate-100 border-slate-300 rounded focus:ring-emerald-500 focus:ring-2"
+                          />
+                          <label htmlFor={`lts-${product.id}`} className="text-sm font-medium text-slate-700 cursor-pointer">
+                            Long Term Support (LTS)
+                          </label>
+                        </div>
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <Button
                         type="submit"
                         size="sm"
+                        variant='primary'
                         isLoading={createVersionMutation.isPending}
                       >
                         Thêm version
@@ -307,7 +379,7 @@ function AdminEOLPage() {
                         size="sm"
                         onClick={() => {
                           setShowNewVersion(null);
-                          setNewVersion({ version: '', eolDate: '', releaseDate: '' });
+                          setNewVersion({ version: '', eolDate: '', releaseDate: '', extendedSupportDate: '', lts: false, lifecycleStage: 'active' });
                         }}
                       >
                         Hủy
@@ -318,7 +390,14 @@ function AdminEOLPage() {
               )}
 
               {/* Versions List */}
-              <ProductVersions productId={product.id} />
+              <ProductVersions
+                productId={product.id}
+                editingVersion={editingVersion}
+                onEdit={setEditingVersion}
+                onUpdate={updateVersionMutation.mutate}
+                isUpdating={updateVersionMutation.isPending}
+                onDelete={setDeleteConfirm}
+              />
             </Card>
           ))}
 
@@ -335,7 +414,7 @@ function AdminEOLPage() {
                   onClick={() => setCurrentPage(1)}
                   disabled={currentPage === 1}
                 >
-                  ⏮️
+                  Đầu
                 </Button>
                 <Button
                   variant="outline"
@@ -343,9 +422,9 @@ function AdminEOLPage() {
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                 >
-                  ◀️ Trước
+                  Trước
                 </Button>
-                
+
                 {/* Page numbers */}
                 <div className="hidden sm:flex items-center gap-1">
                   {Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -362,25 +441,24 @@ function AdminEOLPage() {
                         )}
                         <button
                           onClick={() => setCurrentPage(page)}
-                          className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                            currentPage === page
-                              ? 'bg-emerald-600 text-white'
-                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                          }`}
+                          className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${currentPage === page
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            }`}
                         >
                           {page}
                         </button>
                       </div>
                     ))}
                 </div>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
                 >
-                  Sau ▶️
+                  Sau
                 </Button>
                 <Button
                   variant="outline"
@@ -388,7 +466,7 @@ function AdminEOLPage() {
                   onClick={() => setCurrentPage(totalPages)}
                   disabled={currentPage === totalPages}
                 >
-                  ⏭️
+                  Cuối
                 </Button>
               </div>
             </div>
@@ -403,21 +481,48 @@ function AdminEOLPage() {
             action={
               !searchQuery && (
                 <Button onClick={() => setShowNewProduct(true)}>
-                  ➕ Thêm sản phẩm
+                  Thêm sản phẩm
                 </Button>
               )
             }
           />
         </Card>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={() => deleteVersionMutation.mutate({ id: deleteConfirm!.id })}
+        title="Xác nhận xóa"
+        description="Bạn có chắc chắn muốn xóa version này? Hành động này không thể hoàn tác."
+        confirmText="Xóa"
+        cancelText="Hủy"
+        variant="danger"
+        isLoading={deleteVersionMutation.isPending}
+      />
     </div>
   );
 }
 
-function ProductVersions({ productId }: { productId: string }) {
+function ProductVersions({
+  productId,
+  editingVersion,
+  onEdit,
+  onUpdate,
+  isUpdating,
+  onDelete
+}: {
+  productId: string;
+  editingVersion: any;
+  onEdit: (version: any) => void;
+  onUpdate: (data: any) => void;
+  isUpdating: boolean;
+  onDelete: (data: { id: string; productId: string }) => void;
+}) {
   const [versionPage, setVersionPage] = useState(1);
   const VERSIONS_PER_PAGE = 5;
-  
+
   const { data, isLoading } = useQuery({
     queryKey: ['eol-versions', productId],
     queryFn: () => getVersionsByProduct({ data: { productId } }),
@@ -473,14 +578,14 @@ function ProductVersions({ productId }: { productId: string }) {
           </div>
         )}
       </div>
-      
+
       {/* Versions List */}
       <div className="divide-y divide-slate-100">
         {paginatedVersions.map((v: any) => {
           const eolDate = v.eolDate ? new Date(v.eolDate) : null;
           const now = new Date();
           const daysUntilEol = eolDate ? Math.ceil((eolDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null;
-          
+
           let status: 'success' | 'warning' | 'danger' | 'default' = 'default';
           if (daysUntilEol !== null) {
             if (daysUntilEol < 0) status = 'danger';
@@ -488,50 +593,152 @@ function ProductVersions({ productId }: { productId: string }) {
             else status = 'success';
           }
 
+          const isEditing = editingVersion?.id === v.id;
+
           return (
-            <div key={v.id} className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50">
-              <div className="flex items-center gap-3 flex-wrap">
-                <Badge variant={status} size="sm">
-                  v{v.versionNumber}
-                </Badge>
-                {v.lts && (
-                  <Badge variant="purple" size="sm">LTS</Badge>
-                )}
-                {v.lifecycleStage && (
-                  <span className={`text-xs px-2 py-0.5 rounded ${
-                    v.lifecycleStage === 'active' ? 'bg-green-100 text-green-700' :
-                    v.lifecycleStage === 'maintenance' ? 'bg-blue-100 text-blue-700' :
-                    v.lifecycleStage === 'deprecated' ? 'bg-orange-100 text-orange-700' :
-                    'bg-gray-100 text-gray-600'
-                  }`}>
-                    {v.lifecycleStage}
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-4 text-sm flex-wrap">
-                {v.releaseDate && (
-                  <span className="text-slate-500 whitespace-nowrap">
-                    📅 Phát hành: {new Date(v.releaseDate).toLocaleDateString('vi-VN')}
-                  </span>
-                )}
-                {eolDate ? (
-                  <span className={`whitespace-nowrap ${daysUntilEol && daysUntilEol < 0 ? 'text-red-600 font-medium' : 'text-slate-600'}`}>
-                    ⏰ EOL: {eolDate.toLocaleDateString('vi-VN')}
-                    {daysUntilEol !== null && (
-                      <span className={`ml-1 text-xs px-1.5 py-0.5 rounded ${
-                        daysUntilEol < 0 ? 'bg-red-100 text-red-700' :
-                        daysUntilEol <= 30 ? 'bg-red-100 text-red-700' :
-                        daysUntilEol <= 90 ? 'bg-amber-100 text-amber-700' :
-                        'bg-green-100 text-green-700'
-                      }`}>
-                        {daysUntilEol < 0 ? `Quá ${Math.abs(daysUntilEol)} ngày` : `còn ${daysUntilEol} ngày`}
+            <div key={v.id}>
+              {isEditing ? (
+                // Edit Form
+                <div className="p-4 bg-blue-50 border-b border-blue-200">
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      onUpdate({
+                        id: editingVersion.id,
+                        version: editingVersion.versionNumber,
+                        eolDate: editingVersion.eolDate,
+                        releaseDate: editingVersion.releaseDate,
+                        extendedSupportDate: editingVersion.extendedSupportDate,
+                        lts: editingVersion.lts,
+                        lifecycleStage: editingVersion.lifecycleStage,
+                      });
+                    }}
+                    className="space-y-3"
+                  >
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      <Input
+                        label="Version *"
+                        type="text"
+                        value={editingVersion.versionNumber}
+                        onChange={(e) => onEdit({ ...editingVersion, versionNumber: e.target.value })}
+                        required
+                      />
+                      <Input
+                        label="Ngày phát hành"
+                        type="date"
+                        value={editingVersion.releaseDate || ''}
+                        onChange={(e) => onEdit({ ...editingVersion, releaseDate: e.target.value })}
+                      />
+                      <Input
+                        label="Ngày EOL"
+                        type="date"
+                        value={editingVersion.eolDate || ''}
+                        onChange={(e) => onEdit({ ...editingVersion, eolDate: e.target.value })}
+                      />
+                      <Input
+                        label="Extended Support"
+                        type="date"
+                        value={editingVersion.extendedSupportDate || ''}
+                        onChange={(e) => onEdit({ ...editingVersion, extendedSupportDate: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      <Select
+                        label="Lifecycle Stage *"
+                        value={editingVersion.lifecycleStage}
+                        onChange={(e) => onEdit({ ...editingVersion, lifecycleStage: e.target.value })}
+                        options={LIFECYCLE_STAGE_OPTIONS}
+                        required
+                      />
+                      <div className="flex items-end">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id={`edit-lts-${v.id}`}
+                            checked={editingVersion.lts}
+                            onChange={(e) => onEdit({ ...editingVersion, lts: e.target.checked })}
+                            className="w-4 h-4 text-emerald-600 bg-slate-100 border-slate-300 rounded focus:ring-emerald-500 focus:ring-2"
+                          />
+                          <label htmlFor={`edit-lts-${v.id}`} className="text-sm font-medium text-slate-700 cursor-pointer">
+                            Long Term Support (LTS)
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button type="submit" size="sm" isLoading={isUpdating}>
+                        Lưu
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onEdit(null)}
+                      >
+                        Hủy
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              ) : (
+                // Display Mode
+                <div className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <Badge variant={status} size="sm">
+                      {v.versionNumber}
+                    </Badge>
+                    {v.lts && (
+                      <Badge variant="purple" size="sm">LTS</Badge>
+                    )}
+                    {v.lifecycleStage && (
+                      <span className={`text-xs px-2 py-0.5 rounded ${v.lifecycleStage === 'active' ? 'bg-green-100 text-green-700' :
+                        v.lifecycleStage === 'maintenance' ? 'bg-blue-100 text-blue-700' :
+                          v.lifecycleStage === 'deprecated' ? 'bg-orange-100 text-orange-700' :
+                            'bg-gray-100 text-gray-600'
+                        }`}>
+                        {v.lifecycleStage}
                       </span>
                     )}
-                  </span>
-                ) : (
-                  <span className="text-slate-400">Chưa có EOL</span>
-                )}
-              </div>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm flex-wrap">
+                    {v.releaseDate && (
+                      <span className="text-slate-500 whitespace-nowrap">
+                        📅 Phát hành: {new Date(v.releaseDate).toLocaleDateString('vi-VN')}
+                      </span>
+                    )}
+                    {eolDate ? (
+                      <span className={`whitespace-nowrap ${daysUntilEol && daysUntilEol < 0 ? 'text-red-600 font-medium' : 'text-slate-600'}`}>
+                        ⏰ EOL: {eolDate.toLocaleDateString('vi-VN')}
+                        {daysUntilEol !== null && (
+                          <span className={`ml-1 text-xs px-1.5 py-0.5 rounded ${daysUntilEol < 0 ? 'bg-red-100 text-red-700' :
+                            daysUntilEol <= 30 ? 'bg-red-100 text-red-700' :
+                              daysUntilEol <= 90 ? 'bg-amber-100 text-amber-700' :
+                                'bg-green-100 text-green-700'
+                            }`}>
+                            {daysUntilEol < 0 ? `Quá ${Math.abs(daysUntilEol)} ngày` : `còn ${daysUntilEol} ngày`}
+                          </span>
+                        )}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400">Chưa có EOL</span>
+                    )}
+                    <button
+                      onClick={() => onEdit(v)}
+                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded transition-colors"
+                      title="Chỉnh sửa"
+                    >
+                      Sửa
+                    </button>
+                    <button
+                      onClick={() => onDelete({ id: v.id, productId: v.productId })}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                      title="Xóa"
+                    >
+                      Xoá
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

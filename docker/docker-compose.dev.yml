@@ -10,12 +10,13 @@ services:
     container_name: wiki-database-dev
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_NAME:-wikidb}
+
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data_dev:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "${DB_PORT:-5432}:5432"
     networks:
@@ -51,7 +52,7 @@ services:
       - ./tsconfig.json:/app/tsconfig.json:ro
       - ./tailwind.config.js:/app/tailwind.config.js:ro
       - ./postcss.config.js:/app/postcss.config.js:ro
-    command: ["bun", "run", "dev", "--host", "0.0.0.0"]
+    command: [ "bun", "run", "dev", "--host", "0.0.0.0" ]
 
 networks:
   wiki-network-dev:

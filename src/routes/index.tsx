@@ -231,7 +231,7 @@ function EOLTrackerPage() {
 
       {/* Critical Alert Banner */}
       {criticalVersions.length > 0 && (
-        <div className="bg-gradient-to-r from-red-500 to-rose-600 rounded-xl p-4 text-white shadow-lg">
+        <div className="bg-linear-to-r from-red-500 to-rose-600 rounded-xl p-4 text-white shadow-lg">
           <div className="flex items-center gap-3 mb-3">
             <span className="text-2xl">🚨</span>
             <h2 className="text-lg font-bold">Cảnh báo khẩn cấp!</h2>
@@ -326,11 +326,10 @@ function EOLTrackerPage() {
           <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
             <button
               onClick={() => handleFilterChange('all')}
-              className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
-                selectedType === 'all'
-                  ? 'bg-emerald-100 text-emerald-700 font-medium'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
+              className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${selectedType === 'all'
+                ? 'bg-emerald-100 text-emerald-700 font-medium'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
             >
               Tất cả
             </button>
@@ -338,11 +337,10 @@ function EOLTrackerPage() {
               <button
                 key={type}
                 onClick={() => handleFilterChange(type)}
-                className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors flex items-center gap-2 ${
-                  selectedType === type
-                    ? 'bg-emerald-100 text-emerald-700 font-medium'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
+                className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors flex items-center gap-2 ${selectedType === type
+                  ? 'bg-emerald-100 text-emerald-700 font-medium'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
               >
                 <span>{productTypeIcons[type] || productTypeIcons.default}</span>
                 {productTypeLabels[type] || type}
@@ -358,24 +356,24 @@ function EOLTrackerPage() {
           <h2 className="text-xl font-semibold text-slate-800">📦 Danh sách sản phẩm</h2>
           <span className="text-sm text-slate-500">{filteredProducts.length} sản phẩm</span>
         </div>
-        
+
         {filteredProducts.length > 0 ? (
           viewMode === 'grid' ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
               {paginatedProducts.map((product: any) => {
                 // Get the nearest expiring version for this product
                 const productExpiring = expiringVersions.filter((v: any) => v.product?.id === product.id);
-                const nearestExpiring = productExpiring.length > 0 
+                const nearestExpiring = productExpiring.length > 0
                   ? productExpiring.reduce((nearest: any, current: any) => {
-                      const currentDays = getDaysUntil(current.eolDate);
-                      const nearestDays = getDaysUntil(nearest.eolDate);
-                      if (currentDays === null) return nearest;
-                      if (nearestDays === null) return current;
-                      return currentDays < nearestDays ? current : nearest;
-                    })
+                    const currentDays = getDaysUntil(current.eolDate);
+                    const nearestDays = getDaysUntil(nearest.eolDate);
+                    if (currentDays === null) return nearest;
+                    if (nearestDays === null) return current;
+                    return currentDays < nearestDays ? current : nearest;
+                  })
                   : null;
                 const urgency = nearestExpiring ? getUrgencyLevel(getDaysUntil(nearestExpiring.eolDate)) : null;
-                
+
                 return (
                   <Link
                     key={product.id}
@@ -411,7 +409,7 @@ function EOLTrackerPage() {
                         →
                       </span>
                     </div>
-                    
+
                     {/* Product Stats */}
                     <div className="mt-3 pt-3 border-t border-slate-200 grid grid-cols-2 gap-2 text-xs">
                       <div className="flex items-center gap-1.5 text-slate-500">
@@ -428,19 +426,18 @@ function EOLTrackerPage() {
 
                     {/* EOL Warning */}
                     {nearestExpiring && urgency && (
-                      <div className={`mt-2 p-2 rounded-lg text-xs flex items-center gap-2 ${
-                        urgency.level === 'critical' || urgency.level === 'expired' 
-                          ? 'bg-red-100 text-red-700' 
-                          : urgency.level === 'warning' 
-                            ? 'bg-orange-100 text-orange-700'
-                            : 'bg-amber-100 text-amber-700'
-                      }`}>
+                      <div className={`mt-2 p-2 rounded-lg text-xs flex items-center gap-2 ${urgency.level === 'critical' || urgency.level === 'expired'
+                        ? 'bg-red-100 text-red-700'
+                        : urgency.level === 'warning'
+                          ? 'bg-orange-100 text-orange-700'
+                          : 'bg-amber-100 text-amber-700'
+                        }`}>
                         <span>{urgency.icon}</span>
                         <span className="font-medium">v{nearestExpiring.versionNumber}</span>
                         <span>EOL: {formatDate(nearestExpiring.eolDate)}</span>
                       </div>
                     )}
-                    
+
                     {product.description && (
                       <p className="text-sm text-slate-500 mt-3 line-clamp-2">{product.description}</p>
                     )}
@@ -452,17 +449,17 @@ function EOLTrackerPage() {
             <div className="divide-y divide-slate-200">
               {paginatedProducts.map((product: any) => {
                 const productExpiring = expiringVersions.filter((v: any) => v.product?.id === product.id);
-                const nearestExpiring = productExpiring.length > 0 
+                const nearestExpiring = productExpiring.length > 0
                   ? productExpiring.reduce((nearest: any, current: any) => {
-                      const currentDays = getDaysUntil(current.eolDate);
-                      const nearestDays = getDaysUntil(nearest.eolDate);
-                      if (currentDays === null) return nearest;
-                      if (nearestDays === null) return current;
-                      return currentDays < nearestDays ? current : nearest;
-                    })
+                    const currentDays = getDaysUntil(current.eolDate);
+                    const nearestDays = getDaysUntil(nearest.eolDate);
+                    if (currentDays === null) return nearest;
+                    if (nearestDays === null) return current;
+                    return currentDays < nearestDays ? current : nearest;
+                  })
                   : null;
                 const urgency = nearestExpiring ? getUrgencyLevel(getDaysUntil(nearestExpiring.eolDate)) : null;
-                
+
                 return (
                   <Link
                     key={product.id}
@@ -494,15 +491,14 @@ function EOLTrackerPage() {
                       </div>
                     </div>
                     {nearestExpiring && urgency && (
-                      <div className={`px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 ${
-                        urgency.level === 'critical' || urgency.level === 'expired' 
-                          ? 'bg-red-100 text-red-700' 
-                          : urgency.level === 'warning' 
-                            ? 'bg-orange-100 text-orange-700'
-                            : urgency.level === 'attention'
-                              ? 'bg-amber-100 text-amber-700'
-                              : 'bg-slate-100 text-slate-600'
-                      }`}>
+                      <div className={`px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 ${urgency.level === 'critical' || urgency.level === 'expired'
+                        ? 'bg-red-100 text-red-700'
+                        : urgency.level === 'warning'
+                          ? 'bg-orange-100 text-orange-700'
+                          : urgency.level === 'attention'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-slate-100 text-slate-600'
+                        }`}>
                         <span>{urgency.icon}</span>
                         <span>v{nearestExpiring.versionNumber}: {formatDate(nearestExpiring.eolDate)}</span>
                       </div>
@@ -531,7 +527,7 @@ function EOLTrackerPage() {
             />
           </div>
         )}
-        
+
         {/* Products Pagination */}
         {totalProductPages > 1 && (
           <div className="p-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -545,7 +541,7 @@ function EOLTrackerPage() {
                 onClick={() => setCurrentPage(1)}
                 disabled={currentPage === 1}
               >
-                ⏮️
+                Đầu
               </Button>
               <Button
                 variant="outline"
@@ -553,9 +549,9 @@ function EOLTrackerPage() {
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
               >
-                ◀️ Trước
+                Trước
               </Button>
-              
+
               {/* Page numbers */}
               <div className="hidden sm:flex items-center gap-1">
                 {Array.from({ length: totalProductPages }, (_, i) => i + 1)
@@ -572,25 +568,24 @@ function EOLTrackerPage() {
                       )}
                       <button
                         onClick={() => setCurrentPage(page)}
-                        className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                          currentPage === page
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                        }`}
+                        className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${currentPage === page
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
                       >
                         {page}
                       </button>
                     </div>
                   ))}
               </div>
-              
+
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentPage(p => Math.min(totalProductPages, p + 1))}
                 disabled={currentPage === totalProductPages}
               >
-                Sau ▶️
+                Sau
               </Button>
               <Button
                 variant="outline"
@@ -598,7 +593,7 @@ function EOLTrackerPage() {
                 onClick={() => setCurrentPage(totalProductPages)}
                 disabled={currentPage === totalProductPages}
               >
-                ⏭️
+                Cuối
               </Button>
             </div>
           </div>
@@ -606,7 +601,7 @@ function EOLTrackerPage() {
       </div>
 
       {/* Quick Info */}
-      <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-6 border border-slate-200">
+      <div className="bg-linear-to-r from-slate-50 to-slate-100 rounded-xl p-6 border border-slate-200">
         <h3 className="font-semibold text-slate-800 mb-4">📚 Hướng dẫn sử dụng</h3>
         <div className="grid md:grid-cols-4 gap-4 text-sm">
           <div className="flex items-start gap-3">
@@ -643,7 +638,7 @@ function EOLTrackerPage() {
       {/* All Expiring Versions Summary Table */}
       {expiringVersions.length > 0 && (
         <Card padding="none" className="overflow-hidden">
-          <div className="p-4 border-b border-slate-200 bg-gradient-to-r from-amber-50 to-orange-50">
+          <div className="p-4 border-b border-slate-200 bg-linear-to-r from-amber-50 to-orange-50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">📋</span>
@@ -674,8 +669,8 @@ function EOLTrackerPage() {
                   return (
                     <tr key={version.id} className="hover:bg-slate-50">
                       <td className="px-4 py-3">
-                        <Link 
-                          to="/eol/$slug" 
+                        <Link
+                          to="/eol/$slug"
                           params={{ slug: version.product?.slug }}
                           className="flex items-center gap-2 text-slate-800 hover:text-emerald-600"
                         >
@@ -685,7 +680,7 @@ function EOLTrackerPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-slate-700">v{version.versionNumber}</span>
+                          <span className="font-mono text-slate-700">{version.versionNumber}</span>
                           {version.lts && (
                             <Badge variant="purple" size="sm">LTS</Badge>
                           )}
@@ -698,23 +693,22 @@ function EOLTrackerPage() {
                         {formatDate(version.eolDate)}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`font-semibold ${
-                          days !== null && days < 0 ? 'text-red-600' :
+                        <span className={`font-semibold ${days !== null && days < 0 ? 'text-red-600' :
                           days !== null && days <= 30 ? 'text-red-600' :
-                          days !== null && days <= 60 ? 'text-orange-600' :
-                          'text-amber-600'
-                        }`}>
-                          {days === null ? 'N/A' : 
-                           days < 0 ? `Quá ${Math.abs(days)} ngày` : 
-                           days === 0 ? 'Hôm nay!' :
-                           `${days} ngày`}
+                            days !== null && days <= 60 ? 'text-orange-600' :
+                              'text-amber-600'
+                          }`}>
+                          {days === null ? 'N/A' :
+                            days < 0 ? `Quá ${Math.abs(days)} ngày` :
+                              days === 0 ? 'Hôm nay!' :
+                                `${days} ngày`}
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <Badge 
+                        <Badge
                           variant={
                             urgency.level === 'expired' || urgency.level === 'critical' ? 'danger' :
-                            urgency.level === 'warning' ? 'warning' : 'info'
+                              urgency.level === 'warning' ? 'warning' : 'info'
                           }
                           size="sm"
                           dot
@@ -728,7 +722,7 @@ function EOLTrackerPage() {
               </tbody>
             </table>
           </div>
-          
+
           {/* Expiring Versions Pagination */}
           {totalExpiringPages > 1 && (
             <div className="p-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -742,7 +736,7 @@ function EOLTrackerPage() {
                   onClick={() => setExpiringPage(1)}
                   disabled={expiringPage === 1}
                 >
-                  ⏮️
+                  Đầu
                 </Button>
                 <Button
                   variant="outline"
@@ -750,9 +744,9 @@ function EOLTrackerPage() {
                   onClick={() => setExpiringPage(p => Math.max(1, p - 1))}
                   disabled={expiringPage === 1}
                 >
-                  ◀️ Trước
+                  Trước
                 </Button>
-                
+
                 {/* Page numbers */}
                 <div className="hidden sm:flex items-center gap-1">
                   {Array.from({ length: totalExpiringPages }, (_, i) => i + 1)
@@ -769,25 +763,24 @@ function EOLTrackerPage() {
                         )}
                         <button
                           onClick={() => setExpiringPage(page)}
-                          className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                            expiringPage === page
-                              ? 'bg-emerald-600 text-white'
-                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                          }`}
+                          className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${expiringPage === page
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            }`}
                         >
                           {page}
                         </button>
                       </div>
                     ))}
                 </div>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setExpiringPage(p => Math.min(totalExpiringPages, p + 1))}
                   disabled={expiringPage === totalExpiringPages}
                 >
-                  Sau ▶️
+                  Sau
                 </Button>
                 <Button
                   variant="outline"
@@ -795,7 +788,7 @@ function EOLTrackerPage() {
                   onClick={() => setExpiringPage(totalExpiringPages)}
                   disabled={expiringPage === totalExpiringPages}
                 >
-                  ⏭️
+                  Cuối
                 </Button>
               </div>
             </div>

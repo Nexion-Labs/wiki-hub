@@ -76,7 +76,7 @@ function AdminUsersPage() {
           <h1 className="text-3xl font-bold text-slate-800">👥 Quản lý người dùng</h1>
           <p className="text-slate-500 mt-1">Tổng cộng {users?.length || 0} người dùng</p>
         </div>
-        <Button leftIcon={<span>➕</span>}>
+        <Button>
           Thêm người dùng
         </Button>
       </div>
@@ -151,7 +151,7 @@ function AdminUsersPage() {
                               // Edit user functionality
                             }}
                           >
-                            ✏️ Sửa
+                            Sửa
                           </Button>
                           {deleteConfirm === u.id ? (
                             <div className="flex items-center gap-2">
@@ -178,7 +178,7 @@ function AdminUsersPage() {
                               onClick={() => setDeleteConfirm(u.id)}
                               className="text-red-600 hover:text-red-700 hover:bg-red-50"
                             >
-                              🗑️ Xóa
+                              Xóa
                             </Button>
                           )}
                         </div>

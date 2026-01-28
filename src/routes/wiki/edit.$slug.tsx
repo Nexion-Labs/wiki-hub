@@ -40,7 +40,7 @@ function WikiEditPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!data?.data?.id || !user) return;
-    
+
     setError('');
     setLoading(true);
 
@@ -121,7 +121,7 @@ function WikiEditPage() {
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-              <span className="text-2xl">✏️</span>
+              <span className="text-2xl">Sửa</span>
             </div>
             <div>
               <h1 className="text-2xl font-bold text-slate-800">Chỉnh sửa bài viết</h1>
@@ -179,7 +179,7 @@ function WikiEditPage() {
             <div className="flex gap-3">
               <Link to="/wiki/$slug" params={{ slug }}>
                 <Button variant="outline">
-                  👁️ Xem trước
+                  Xem trước
                 </Button>
               </Link>
               <Button

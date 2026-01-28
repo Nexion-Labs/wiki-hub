@@ -28,7 +28,7 @@ function WikiNewPage() {
       setError('Bạn cần đăng nhập để tạo bài viết');
       return;
     }
-    
+
     setError('');
     setLoading(true);
 
@@ -40,7 +40,7 @@ function WikiNewPage() {
           isPublished: true,
           authorId: user.id,
         },
-      });
+      }) as { success: boolean; data?: { slug: string }; error?: string };
 
       if (result.success && result.data) {
         queryClient.invalidateQueries({ queryKey: ['wiki-pages'] });
@@ -147,13 +147,13 @@ Khối code
                   // Preview functionality could be added here
                 }}
               >
-                👁️ Xem trước
+                Xem trước
               </Button>
               <Button
                 type="submit"
                 isLoading={loading}
               >
-                {loading ? 'Đang tạo...' : '📤 Xuất bản'}
+                {loading ? 'Đang tạo...' : 'Xuất bản'}
               </Button>
             </div>
           </div>

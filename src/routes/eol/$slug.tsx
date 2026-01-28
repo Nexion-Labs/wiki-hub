@@ -55,7 +55,7 @@ const getStatusBadge = (eolDate: string | null | undefined, extendedSupportDate?
   if (daysUntilEol === null) {
     return { color: 'bg-slate-100 text-slate-600', text: 'Chưa xác định', icon: '❓' };
   }
-  
+
   if (daysUntilEol < 0) {
     // Check extended support
     if (daysUntilExtended !== null && daysUntilExtended > 0) {
@@ -63,25 +63,25 @@ const getStatusBadge = (eolDate: string | null | undefined, extendedSupportDate?
     }
     return { color: 'bg-red-100 text-red-700', text: 'Hết hạn hỗ trợ', icon: '⚠️' };
   }
-  
+
   if (daysUntilEol <= 30) {
     return { color: 'bg-red-100 text-red-700', text: `${daysUntilEol} ngày còn lại`, icon: '🚨' };
   }
-  
+
   if (daysUntilEol <= 90) {
     return { color: 'bg-amber-100 text-amber-700', text: `${daysUntilEol} ngày còn lại`, icon: '⚡' };
   }
-  
+
   if (daysUntilEol <= 180) {
     return { color: 'bg-yellow-100 text-yellow-700', text: `${daysUntilEol} ngày còn lại`, icon: '📅' };
   }
-  
+
   return { color: 'bg-emerald-100 text-emerald-700', text: 'Đang hoạt động', icon: '✅' };
 };
 
 function EOLDetailPage() {
   const { slug } = Route.useParams();
-  
+
   const { data: productData, isLoading: loadingProduct } = useQuery({
     queryKey: ['eol-product', slug],
     queryFn: () => getProduct({ data: { slug } }),
@@ -144,7 +144,7 @@ function EOLDetailPage() {
 
       {/* Product Header */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-8 text-white">
+        <div className="bg-linear-to-r from-emerald-500 to-teal-600 px-6 py-8 text-white">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
               {product.iconUrl ? (
@@ -168,12 +168,12 @@ function EOLDetailPage() {
             )}
           </div>
         </div>
-        
+
         <div className="p-6">
           {product.description && (
             <p className="text-slate-600 mb-4">{product.description}</p>
           )}
-          
+
           <div className="flex flex-wrap gap-4">
             {product.homepageUrl && (
               <a
@@ -226,7 +226,7 @@ function EOLDetailPage() {
 
       {/* LTS Versions Highlight */}
       {ltsVersions.length > 0 && (
-        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200 p-4">
+        <div className="bg-linear-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200 p-4">
           <h3 className="font-semibold text-purple-800 mb-2 flex items-center gap-2">
             <span>⭐</span> Long Term Support (LTS) Versions
           </h3>
@@ -246,7 +246,7 @@ function EOLDetailPage() {
           <h2 className="text-xl font-semibold text-slate-800">Danh sách phiên bản</h2>
           <span className="text-sm text-slate-500">{versions.length} phiên bản</span>
         </div>
-        
+
         {loadingVersions ? (
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div>
@@ -280,7 +280,7 @@ function EOLDetailPage() {
                 {versions.map((version: any) => {
                   const status = getStatusBadge(version.eolDate, version.extendedSupportDate);
                   const lifecycle = getLifecycleStageInfo(version.lifecycleStage);
-                  
+
                   return (
                     <tr key={version.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-4 py-4">
@@ -314,7 +314,7 @@ function EOLDetailPage() {
                         {version.extendedSupportDate ? formatDate(version.extendedSupportDate) : '—'}
                       </td>
                       <td className="px-4 py-4">
-                        <span 
+                        <span
                           className={`px-2.5 py-1 rounded border text-xs font-medium ${lifecycle.color}`}
                           title={lifecycle.description}
                         >
@@ -343,7 +343,7 @@ function EOLDetailPage() {
             {versions.slice(0, 5).map((version: any, index: number) => {
               const status = getStatusBadge(version.eolDate, version.extendedSupportDate);
               const daysUntil = getDaysUntil(version.eolDate);
-              
+
               return (
                 <div key={version.id} className="flex gap-4">
                   <div className="flex flex-col items-center">

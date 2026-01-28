@@ -56,7 +56,7 @@ export const getExpiringVersions = createServerFn({ method: 'GET' })
 
 // Create product (admin only)
 export const createProductFn = createServerFn({ method: 'POST' })
-  .inputValidator((data: { name: string; vendor?: string; description?: string; userId: string }) => data)
+  .inputValidator((data: { name: string; vendor?: string; description?: string; homepageUrl?: string; documentationUrl?: string; userId: string }) => data)
   .handler(async ({ data }) => {
     try {
       const { userId, ...productData } = data;
@@ -83,7 +83,7 @@ export const deleteProductFn = createServerFn({ method: 'POST' })
 
 // Create version
 export const createVersionFn = createServerFn({ method: 'POST' })
-  .inputValidator((data: { productId: string; version: string; eolDate?: string; releaseDate?: string; userId: string }) => data)
+  .inputValidator((data: { productId: string; version: string; eolDate?: string; releaseDate?: string; extendedSupportDate?: string; lts?: boolean; lifecycleStage?: string; userId: string }) => data)
   .handler(async ({ data }) => {
     try {
       const { userId, ...versionData } = data;
@@ -92,5 +92,32 @@ export const createVersionFn = createServerFn({ method: 'POST' })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to create version';
       return { success: false, error: message, data: null };
+    }
+  });
+
+// Update version
+export const updateVersionFn = createServerFn({ method: 'POST' })
+  .inputValidator((data: { id: string; version?: string; eolDate?: string; releaseDate?: string; extendedSupportDate?: string; lts?: boolean; lifecycleStage?: string }) => data)
+  .handler(async ({ data }) => {
+    try {
+      const { id, ...updateData } = data;
+      const version = await eolService.updateVersion(id, updateData);
+      return { success: true, data: version };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to update version';
+      return { success: false, error: message, data: null };
+    }
+  });
+
+// Delete version
+export const deleteVersionFn = createServerFn({ method: 'POST' })
+  .inputValidator((data: { id: string }) => data)
+  .handler(async ({ data }) => {
+    try {
+      await eolService.deleteVersion(data.id);
+      return { success: true };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to delete version';
+      return { success: false, error: message };
     }
   });

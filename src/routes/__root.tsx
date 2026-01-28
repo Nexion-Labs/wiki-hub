@@ -41,11 +41,11 @@ function Navbar() {
   };
 
   const navLinks = [
-    { to: '/', label: '📊 EOL Tracker', public: true },
-    { to: '/wiki', label: '📚 Wiki', public: true },
-    { to: '/dashboard', label: '🎯 Dashboard', requireAuth: true },
-    { to: '/admin/users', label: '👥 Users', adminOnly: true },
-    { to: '/admin/eol', label: '⚙️ Quản lý EOL', adminOnly: true },
+    { to: '/', label: 'EOL Tracker', public: true },
+    { to: '/wiki', label: 'Wiki', public: true },
+    { to: '/dashboard', label: 'Dashboard', requireAuth: true },
+    { to: '/admin/users', label: 'Users', adminOnly: true },
+    { to: '/admin/eol', label: 'Quản lý EOL', adminOnly: true },
   ];
 
   const filteredLinks = navLinks.filter(link => {

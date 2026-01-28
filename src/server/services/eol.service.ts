@@ -26,7 +26,7 @@ export class EOLService {
   }
 
   async listProducts(limit = 50, offset = 0) {
-    return await eolRepository.findAllProducts(limit, offset);
+    return await eolRepository.findAllProducts(limit, offset,);
   }
 
   async updateProduct(id: string, data: any) {
@@ -44,8 +44,10 @@ export class EOLService {
 
   // Version methods
   async createVersion(data: any, userId: string) {
+    const { version, ...rest } = data;
     return await eolRepository.createVersion({
-      ...data,
+      ...rest,
+      versionNumber: version,
       createdBy: userId,
     });
   }
@@ -59,7 +61,9 @@ export class EOLService {
   }
 
   async updateVersion(id: string, data: any) {
-    return await eolRepository.updateVersion(id, data);
+    const { version, ...rest } = data;
+    const updateData = version ? { ...rest, versionNumber: version } : rest;
+    return await eolRepository.updateVersion(id, updateData);
   }
 
   async deleteVersion(id: string) {

@@ -45,7 +45,7 @@ function WikiViewPage() {
           <span className="text-slate-800 font-medium truncate max-w-[200px]">{page.title}</span>
         </div>
         <Link to="/wiki/edit/$slug" params={{ slug: page.slug }}>
-          <Button variant="outline" size="sm" leftIcon={<span>✏️</span>}>
+          <Button variant="outline" size="sm">
             Chỉnh sửa
           </Button>
         </Link>
@@ -96,10 +96,10 @@ function WikiViewPage() {
           </div>
           <div className="flex gap-2">
             <Button variant="ghost" size="sm">
-              🔗 Sao chép link
+              Sao chép link
             </Button>
             <Button variant="ghost" size="sm">
-              📤 Chia sẻ
+              Chia sẻ
             </Button>
           </div>
         </div>
