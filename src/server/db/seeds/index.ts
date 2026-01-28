@@ -3,6 +3,7 @@ import { seedAdmin } from './admin';
 import { seedCategories } from './categories';
 import { seedTags } from './tags';
 import { seedEOL } from './eol';
+import { seedEOLCategories } from './eol-categories';
 import { seedWikiPages } from './wiki-pages';
 import { client } from '../client';
 
@@ -14,6 +15,7 @@ const runSeeds = async () => {
     await seedAdmin();
     await seedCategories();
     await seedTags();
+    await seedEOLCategories();
     await seedEOL();
     await seedWikiPages();
 

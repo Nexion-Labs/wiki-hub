@@ -8,7 +8,7 @@ export const eolProducts = pgTable('eol_products', {
   slug: varchar('slug', { length: 255 }).notNull().unique(),
   vendor: varchar('vendor', { length: 255 }),
   description: text('description'),
-  productType: varchar('product_type', { length: 100 }),
+  categoryId: uuid('category_id').references(() => eolCategories.id),
   homepageUrl: varchar('homepage_url', { length: 500 }),
   documentationUrl: varchar('documentation_url', { length: 500 }),
   license: varchar('license', { length: 100 }),
@@ -19,7 +19,7 @@ export const eolProducts = pgTable('eol_products', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (table) => ({
   slugIdx: index('idx_eol_products_slug').on(table.slug),
-  typeIdx: index('idx_eol_products_type').on(table.productType),
+  categoryIdx: index('idx_eol_products_category').on(table.categoryId),
 }));
 
 export const eolVersions = pgTable('eol_versions', {
@@ -55,9 +55,21 @@ export const eolAlerts = pgTable('eol_alerts', {
   versionIdx: index('idx_eol_alerts_version').on(table.versionId),
 }));
 
+export const eolCategories = pgTable('eol_categories', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  code: varchar('code', { length: 100 }).notNull().unique(), // e.g. 'programming-language'
+  name: varchar('name', { length: 255 }).notNull(), // e.g. 'Ngôn ngữ lập trình'
+  icon: varchar('icon', { length: 50 }).notNull(), // e.g. '💻'
+  description: text('description'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
 export type EOLProduct = typeof eolProducts.$inferSelect;
 export type NewEOLProduct = typeof eolProducts.$inferInsert;
 export type EOLVersion = typeof eolVersions.$inferSelect;
 export type NewEOLVersion = typeof eolVersions.$inferInsert;
 export type EOLAlert = typeof eolAlerts.$inferSelect;
 export type NewEOLAlert = typeof eolAlerts.$inferInsert;
+export type EOLCategory = typeof eolCategories.$inferSelect;
+export type NewEOLCategory = typeof eolCategories.$inferInsert;

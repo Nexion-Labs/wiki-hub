@@ -25,7 +25,7 @@ function AdminUsersPage() {
   });
 
   const updateRoleMutation = useMutation({
-    mutationFn: (data: { userId: string; roleId: string }) => 
+    mutationFn: (data: { userId: string; roleId: string }) =>
       updateUserFn({ data: { id: data.userId, roleId: data.roleId } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -73,7 +73,7 @@ function AdminUsersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800">👥 Quản lý người dùng</h1>
+          <h1 className="text-3xl font-bold text-slate-800">Quản lý người dùng</h1>
           <p className="text-slate-500 mt-1">Tổng cộng {users?.length || 0} người dùng</p>
         </div>
         <Button>
@@ -110,35 +110,35 @@ function AdminUsersPage() {
                   <tr key={u.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white font-semibold">
-                          {u.username?.[0]?.toUpperCase() || '?'}
+                        <div className="w-10 h-10 bg-linear-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white font-semibold">
+                          {u.users?.fullName?.[0]?.toUpperCase() || '?'}
                         </div>
                         <div>
-                          <div className="font-medium text-slate-900">{u.username}</div>
-                          {u.fullName && (
-                            <div className="text-sm text-slate-500">{u.fullName}</div>
+                          <div className="font-medium text-slate-900">{u.users?.username}</div>
+                          {u.users?.fullName && (
+                            <div className="text-sm text-slate-500">{u.users?.fullName}</div>
                           )}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-slate-600">{u.email}</span>
+                      <span className="text-slate-600">{u?.users?.email}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge 
-                        variant={u.role?.name === 'admin' ? 'purple' : 'info'}
+                      <Badge
+                        variant={u?.roles?.name === 'admin' ? 'purple' : 'info'}
                         size="sm"
                       >
-                        {u.role?.name || 'user'}
+                        {u?.roles?.name || 'user'}
                       </Badge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge 
-                        variant={u.isActive ? 'success' : 'danger'} 
+                      <Badge
+                        variant={u?.users?.isActive ? 'success' : 'danger'}
                         size="sm"
                         dot
                       >
-                        {u.isActive ? 'Hoạt động' : 'Vô hiệu'}
+                        {u?.users?.isActive ? 'Hoạt động' : 'Vô hiệu'}
                       </Badge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -202,8 +202,8 @@ function AdminUsersPage() {
             </tbody>
           </table>
         </div>
-      </Card>
-    </div>
+      </Card >
+    </div >
   );
 }
 

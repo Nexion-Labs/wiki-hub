@@ -2,6 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { listProducts, createProductFn, deleteProductFn, createVersionFn, updateVersionFn, deleteVersionFn, getVersionsByProduct } from '../../server/functions/eol';
+import { listEOLCategoriesFn } from '../../server/functions/eol-categories';
 import { getSessionUser } from '../../server/functions/auth';
 import { Button, Input, Textarea, Card, CardHeader, Badge, LoadingState, EmptyState, Alert, Select, ConfirmDialog } from '../../components';
 import { LIFECYCLE_STAGE_OPTIONS } from '../../types/eol';
@@ -14,7 +15,7 @@ function AdminEOLPage() {
   const [showNewVersion, setShowNewVersion] = useState<string | null>(null);
   const [editingVersion, setEditingVersion] = useState<any>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; productId: string } | null>(null);
-  const [newProduct, setNewProduct] = useState({ name: '', vendor: '', description: '', homepageUrl: '', documentationUrl: '' });
+  const [newProduct, setNewProduct] = useState({ name: '', vendor: '', description: '', categoryId: '', homepageUrl: '', documentationUrl: '' });
   const [newVersion, setNewVersion] = useState({ version: '', eolDate: '', releaseDate: '', extendedSupportDate: '', lts: false, lifecycleStage: 'active' });
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
@@ -34,13 +35,26 @@ function AdminEOLPage() {
     enabled: user?.role === 'admin',
   });
 
+  const { data: categoriesData } = useQuery({
+    queryKey: ['eol-categories'],
+    queryFn: () => listEOLCategoriesFn(),
+    enabled: user?.role === 'admin',
+  });
+
+  const categories = categoriesData?.success ? categoriesData.data : [];
+
+  const categoryOptions = categories.map((c: any) => ({
+    label: `${c.icon} ${c.name}`,
+    value: c.id,
+  }));
+
   const createProductMutation = useMutation({
-    mutationFn: (data: { name: string; vendor?: string; description?: string }) =>
+    mutationFn: (data: { name: string; vendor?: string; description?: string; categoryId: string }) =>
       createProductFn({ data: { ...data, userId: user?.id || '' } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['eol-products'] });
       setShowNewProduct(false);
-      setNewProduct({ name: '', vendor: '', description: '', homepageUrl: '', documentationUrl: '' });
+      setNewProduct({ name: '', vendor: '', description: '', categoryId: '', homepageUrl: '', documentationUrl: '' });
     },
   });
 
@@ -139,7 +153,7 @@ function AdminEOLPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800">⚙️ Quản lý EOL</h1>
+          <h1 className="text-3xl font-bold text-slate-800">Quản lý EOL</h1>
           <p className="text-slate-500 mt-1">
             Quản lý {products?.length || 0} sản phẩm và thông tin End of Life
           </p>
@@ -198,6 +212,14 @@ function AdminEOLPage() {
                 placeholder="VD: Microsoft, Oracle..."
               />
             </div>
+            <Select
+              label="Loại sản phẩm *"
+              value={newProduct.categoryId}
+              onChange={(e) => setNewProduct({ ...newProduct, categoryId: e.target.value })}
+              options={categoryOptions}
+              placeholder="Chọn loại sản phẩm"
+              required
+            />
             <Textarea
               label="Mô tả"
               value={newProduct.description}
@@ -233,7 +255,7 @@ function AdminEOLPage() {
                 variant="ghost"
                 onClick={() => {
                   setShowNewProduct(false);
-                  setNewProduct({ name: '', vendor: '', description: '', homepageUrl: '', documentationUrl: '' });
+                  setNewProduct({ name: '', vendor: '', description: '', categoryId: '', homepageUrl: '', documentationUrl: '' });
                 }}
               >
                 Hủy
@@ -258,6 +280,11 @@ function AdminEOLPage() {
                     <h3 className="font-semibold text-slate-800">{product.name}</h3>
                     {product.vendor && (
                       <p className="text-sm text-slate-500">{product.vendor}</p>
+                    )}
+                    {product.categoryId && (
+                      <span className="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded inline-block mt-1">
+                        {categories.find((c: any) => c.id === product.categoryId)?.name || 'Unknown'}
+                      </span>
                     )}
                   </div>
                 </div>

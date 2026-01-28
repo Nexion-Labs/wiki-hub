@@ -58,7 +58,7 @@ function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-6 text-white">
+      <div className="bg-linear-to-r from-emerald-500 to-teal-600 rounded-2xl p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">Xin chào, {user.username}! 👋</h1>
@@ -116,7 +116,7 @@ function DashboardPage() {
           <div className="p-4 border-b border-slate-200 flex justify-between items-center">
             <CardHeader title="📚 Bài viết Wiki gần đây" />
             <Link to="/wiki" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
-              Xem tất cả →
+              Xem tất cả ⟶
             </Link>
           </div>
           <div className="divide-y divide-slate-100">
@@ -136,7 +136,7 @@ function DashboardPage() {
                       {new Date(page.updatedAt).toLocaleDateString('vi-VN')}
                     </p>
                   </div>
-                  <span className="text-slate-400 group-hover:text-emerald-500 transition-colors">→</span>
+                  <span className="text-slate-400 group-hover:text-emerald-500 transition-colors">⟶</span>
                 </Link>
               ))
             ) : (
@@ -156,7 +156,7 @@ function DashboardPage() {
           <div className="p-4 border-b border-slate-200 flex justify-between items-center">
             <CardHeader title="⏰ Sản phẩm sắp hết hạn" />
             <Link to="/" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
-              Xem tất cả →
+              Xem tất cả ⟶
             </Link>
           </div>
           <div className="divide-y divide-slate-100">
@@ -196,8 +196,8 @@ function DashboardPage() {
 
       {/* Quick Actions */}
       <Card>
-        <CardHeader 
-          title="🚀 Thao tác nhanh" 
+        <CardHeader
+          title="🚀 Thao tác nhanh"
           description="Các hành động thường dùng"
         />
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">

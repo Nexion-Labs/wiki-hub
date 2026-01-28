@@ -46,7 +46,7 @@ export const getExpiringVersions = createServerFn({ method: 'GET' })
   .inputValidator((data: { daysAhead: number }) => data)
   .handler(async ({ data }) => {
     try {
-      const versions = await eolService.getExpiringVersions(data.daysAhead);
+      const versions = await eolService.getExpiringVersions(data.daysAhead || 90);
       return { success: true, data: versions };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to get expiring versions';
@@ -56,7 +56,7 @@ export const getExpiringVersions = createServerFn({ method: 'GET' })
 
 // Create product (admin only)
 export const createProductFn = createServerFn({ method: 'POST' })
-  .inputValidator((data: { name: string; vendor?: string; description?: string; homepageUrl?: string; documentationUrl?: string; userId: string }) => data)
+  .inputValidator((data: { name: string; vendor?: string; description?: string; categoryId: string; homepageUrl?: string; documentationUrl?: string; userId: string }) => data)
   .handler(async ({ data }) => {
     try {
       const { userId, ...productData } = data;

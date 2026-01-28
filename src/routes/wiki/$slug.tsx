@@ -14,7 +14,7 @@ function WikiViewPage() {
     return <LoadingState text="Đang tải bài viết..." />;
   }
 
-  if (!data?.success || !data.data) {
+  if (!(data as any)?.success || !(data as any).data) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <Card className="max-w-md w-full text-center" padding="lg">
@@ -24,14 +24,14 @@ function WikiViewPage() {
             Bài viết wiki bạn yêu cầu không tồn tại hoặc đã bị xóa.
           </p>
           <Link to="/wiki">
-            <Button className="w-full">← Quay lại danh sách Wiki</Button>
+            <Button className="w-full">⟵ Quay lại danh sách Wiki</Button>
           </Link>
         </Card>
       </div>
     );
   }
 
-  const page = data.data;
+  const page = (data as any).data;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -71,8 +71,8 @@ function WikiViewPage() {
                 {page.author.username || 'Ẩn danh'}
               </span>
             )}
-            <Badge 
-              variant={page.isPublished ? 'success' : 'default'} 
+            <Badge
+              variant={page.isPublished ? 'success' : 'default'}
               className="bg-white/20 border-white/30 text-white"
             >
               {page.isPublished ? 'Đã xuất bản' : 'Bản nháp'}
@@ -108,7 +108,7 @@ function WikiViewPage() {
       {/* Back Link */}
       <div className="text-center pt-4">
         <Link to="/wiki" className="text-emerald-600 hover:text-emerald-700 font-medium">
-          ← Quay lại danh sách bài viết
+          ⟵ Quay lại danh sách bài viết
         </Link>
       </div>
     </div>

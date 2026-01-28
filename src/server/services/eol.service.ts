@@ -26,7 +26,19 @@ export class EOLService {
   }
 
   async listProducts(limit = 50, offset = 0) {
-    return await eolRepository.findAllProducts(limit, offset,);
+    const products = await eolRepository.findAllProducts(limit, offset);
+    const productIds = products.map((p) => p.id);
+    const versions = await eolRepository.findVersionsByProductIds(productIds);
+    const versionsCount = versions.reduce((acc, version) => {
+      acc[version.productId] = (acc[version.productId] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    return products.map((product) => {
+      return {
+        ...product,
+        versionsCount: versionsCount[product.id] || 0,
+      };
+    });
   }
 
   async updateProduct(id: string, data: any) {
@@ -57,7 +69,18 @@ export class EOLService {
   }
 
   async getExpiringVersions(daysAhead = 90) {
-    return await eolRepository.findExpiringVersions(daysAhead);
+    const versions = await eolRepository.findExpiringVersions(daysAhead);
+    const products = await eolRepository.findAllProducts(1000);
+    const productMap = products.reduce((acc, product) => {
+      acc[product.id] = product;
+      return acc;
+    }, {} as Record<string, any>);
+
+    const versionsWithProducts = versions.map((version) => {
+      const product = productMap[version.productId];
+      return { ...version, product };
+    });
+    return versionsWithProducts;
   }
 
   async updateVersion(id: string, data: any) {

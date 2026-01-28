@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WikiIndexRouteImport } from './routes/wiki/index'
@@ -19,7 +20,13 @@ import { Route as EolSlugRouteImport } from './routes/eol/$slug'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminEolRouteImport } from './routes/admin/eol'
 import { Route as WikiEditSlugRouteImport } from './routes/wiki/edit.$slug'
+import { Route as AdminSettingsCategoriesRouteImport } from './routes/admin/settings/categories'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -70,10 +77,16 @@ const WikiEditSlugRoute = WikiEditSlugRouteImport.update({
   path: '/wiki/edit/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminSettingsCategoriesRoute = AdminSettingsCategoriesRouteImport.update({
+  id: '/admin/settings/categories',
+  path: '/admin/settings/categories',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/settings': typeof SettingsRoute
   '/admin/eol': typeof AdminEolRoute
   '/admin/users': typeof AdminUsersRoute
   '/eol/$slug': typeof EolSlugRoute
@@ -81,11 +94,13 @@ export interface FileRoutesByFullPath {
   '/wiki/new': typeof WikiNewRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/wiki/': typeof WikiIndexRoute
+  '/admin/settings/categories': typeof AdminSettingsCategoriesRoute
   '/wiki/edit/$slug': typeof WikiEditSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/settings': typeof SettingsRoute
   '/admin/eol': typeof AdminEolRoute
   '/admin/users': typeof AdminUsersRoute
   '/eol/$slug': typeof EolSlugRoute
@@ -93,12 +108,14 @@ export interface FileRoutesByTo {
   '/wiki/new': typeof WikiNewRoute
   '/dashboard': typeof DashboardIndexRoute
   '/wiki': typeof WikiIndexRoute
+  '/admin/settings/categories': typeof AdminSettingsCategoriesRoute
   '/wiki/edit/$slug': typeof WikiEditSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/settings': typeof SettingsRoute
   '/admin/eol': typeof AdminEolRoute
   '/admin/users': typeof AdminUsersRoute
   '/eol/$slug': typeof EolSlugRoute
@@ -106,6 +123,7 @@ export interface FileRoutesById {
   '/wiki/new': typeof WikiNewRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/wiki/': typeof WikiIndexRoute
+  '/admin/settings/categories': typeof AdminSettingsCategoriesRoute
   '/wiki/edit/$slug': typeof WikiEditSlugRoute
 }
 export interface FileRouteTypes {
@@ -113,6 +131,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/settings'
     | '/admin/eol'
     | '/admin/users'
     | '/eol/$slug'
@@ -120,11 +139,13 @@ export interface FileRouteTypes {
     | '/wiki/new'
     | '/dashboard/'
     | '/wiki/'
+    | '/admin/settings/categories'
     | '/wiki/edit/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
+    | '/settings'
     | '/admin/eol'
     | '/admin/users'
     | '/eol/$slug'
@@ -132,11 +153,13 @@ export interface FileRouteTypes {
     | '/wiki/new'
     | '/dashboard'
     | '/wiki'
+    | '/admin/settings/categories'
     | '/wiki/edit/$slug'
   id:
     | '__root__'
     | '/'
     | '/login'
+    | '/settings'
     | '/admin/eol'
     | '/admin/users'
     | '/eol/$slug'
@@ -144,12 +167,14 @@ export interface FileRouteTypes {
     | '/wiki/new'
     | '/dashboard/'
     | '/wiki/'
+    | '/admin/settings/categories'
     | '/wiki/edit/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
+  SettingsRoute: typeof SettingsRoute
   AdminEolRoute: typeof AdminEolRoute
   AdminUsersRoute: typeof AdminUsersRoute
   EolSlugRoute: typeof EolSlugRoute
@@ -157,11 +182,19 @@ export interface RootRouteChildren {
   WikiNewRoute: typeof WikiNewRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   WikiIndexRoute: typeof WikiIndexRoute
+  AdminSettingsCategoriesRoute: typeof AdminSettingsCategoriesRoute
   WikiEditSlugRoute: typeof WikiEditSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -232,12 +265,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WikiEditSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/settings/categories': {
+      id: '/admin/settings/categories'
+      path: '/admin/settings/categories'
+      fullPath: '/admin/settings/categories'
+      preLoaderRoute: typeof AdminSettingsCategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
+  SettingsRoute: SettingsRoute,
   AdminEolRoute: AdminEolRoute,
   AdminUsersRoute: AdminUsersRoute,
   EolSlugRoute: EolSlugRoute,
@@ -245,6 +286,7 @@ const rootRouteChildren: RootRouteChildren = {
   WikiNewRoute: WikiNewRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   WikiIndexRoute: WikiIndexRoute,
+  AdminSettingsCategoriesRoute: AdminSettingsCategoriesRoute,
   WikiEditSlugRoute: WikiEditSlugRoute,
 }
 export const routeTree = rootRouteImport

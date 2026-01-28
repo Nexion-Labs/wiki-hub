@@ -19,7 +19,7 @@ function Navbar() {
   const qc = useQueryClient();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+
   // Get current user from session cookies via server function
   const { data: authData, isLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -41,11 +41,12 @@ function Navbar() {
   };
 
   const navLinks = [
-    { to: '/', label: 'EOL Tracker', public: true },
+    { to: '/', label: 'Sản phẩm EOL', public: true },
     { to: '/wiki', label: 'Wiki', public: true },
     { to: '/dashboard', label: 'Dashboard', requireAuth: true },
-    { to: '/admin/users', label: 'Users', adminOnly: true },
+    { to: '/admin/users', label: 'Người dùng', adminOnly: true },
     { to: '/admin/eol', label: 'Quản lý EOL', adminOnly: true },
+    { to: '/settings', label: 'Cài đặt', requireAuth: true },
   ];
 
   const filteredLinks = navLinks.filter(link => {
@@ -242,7 +243,7 @@ function NotFoundComponent() {
               </p>
               <Link to="/">
                 <Button className="w-full">
-                  ← Về trang chủ
+                  ⟵ Về trang chủ
                 </Button>
               </Link>
             </Card>

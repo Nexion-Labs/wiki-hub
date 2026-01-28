@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { getProduct, getVersionsByProduct } from '../../server/functions/eol';
+import { listEOLCategoriesFn } from '../../server/functions/eol-categories';
 
 // Helper functions
 const formatDate = (date: string | null | undefined) => {
@@ -93,6 +94,13 @@ function EOLDetailPage() {
     enabled: !!productData?.data?.id,
   });
 
+  const { data: categoriesData } = useQuery({
+    queryKey: ['eol-categories'],
+    queryFn: () => listEOLCategoriesFn(),
+  });
+
+  const categories = categoriesData?.success ? categoriesData.data : [];
+
   if (loadingProduct) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -107,7 +115,7 @@ function EOLDetailPage() {
         <h1 className="text-2xl font-bold text-slate-800">Không tìm thấy sản phẩm</h1>
         <p className="text-slate-500 mt-2">Sản phẩm bạn tìm kiếm không tồn tại hoặc đã bị xóa.</p>
         <Link to="/" className="text-emerald-600 hover:underline mt-4 inline-block">
-          ← Quay lại EOL Tracker
+          ⟵ Quay lại EOL Tracker
         </Link>
       </div>
     );
@@ -161,9 +169,9 @@ function EOLDetailPage() {
                 )}
               </div>
             </div>
-            {product.productType && (
+            {product.categoryId && (
               <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
-                {product.productType}
+                {categories.find((c: any) => c.id === product.categoryId)?.name || 'Unknown'}
               </span>
             )}
           </div>
@@ -364,7 +372,7 @@ function EOLDetailPage() {
                     </div>
                     <div className="text-sm text-slate-500 mt-1">
                       {version.releaseDate && <span>Phát hành: {formatDate(version.releaseDate)}</span>}
-                      {version.releaseDate && version.eolDate && <span className="mx-2">→</span>}
+                      {version.releaseDate && version.eolDate && <span className="mx-2">⟶</span>}
                       {version.eolDate && <span>EOL: {formatDate(version.eolDate)}</span>}
                     </div>
                   </div>

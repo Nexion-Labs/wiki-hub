@@ -278,7 +278,7 @@ gunzip -c backup.sql.gz | psql -U username -d database_name
 
 ## Version Upgrade Guide
 
-### Major Version Upgrade (14 → 16)
+### Major Version Upgrade (14 ⟶ 16)
 
 1. **Backup current database**
 2. **Install new version** alongside old
@@ -681,7 +681,7 @@ docker volume prune
 
 ## Migration Guide
 
-### Docker 24 → 27
+### Docker 24 ⟶ 27
 - Updated containerd
 - BuildKit improvements
 - Security enhancements
@@ -1026,7 +1026,7 @@ spec:
       maxUnavailable: 0
 \`\`\`
 
-### Version Migration (1.29 → 1.31)
+### Version Migration (1.29 ⟶ 1.31)
 1. Review release notes
 2. Test in non-production
 3. Upgrade control plane

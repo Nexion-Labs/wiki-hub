@@ -1,11 +1,15 @@
 import { db } from '../client';
-import { eolProducts, eolVersions, users } from '../schema';
+import { eolCategories, eolProducts, eolVersions, users } from '../schema';
 import { eq } from 'drizzle-orm';
 
 export const seedEOL = async () => {
   console.log('🌱 Seeding EOL products and versions...');
 
   try {
+    // Fetch categories for mapping
+    const categories = await db.select().from(eolCategories);
+    const catMap = new Map(categories.map(c => [c.code, c.id]));
+
     // Get admin user ID
     const [adminUser] = await db
       .select()
@@ -25,13 +29,16 @@ export const seedEOL = async () => {
         slug: 'nodejs',
         vendor: 'OpenJS Foundation',
         description: 'JavaScript runtime built on Chrome V8 engine',
-        productType: 'runtime',
+        categoryId: catMap.get('runtime')!,
         homepageUrl: 'https://nodejs.org',
         documentationUrl: 'https://nodejs.org/docs',
         createdBy: adminUser.id,
       })
       .returning()
-      .onConflictDoNothing()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('runtime')! }
+      })
       .then(rows => rows[0]);
 
     if (!nodejs) {
@@ -101,13 +108,16 @@ export const seedEOL = async () => {
         slug: 'postgresql',
         vendor: 'PostgreSQL Global Development Group',
         description: 'Advanced open source relational database',
-        productType: 'database',
+        categoryId: catMap.get('database')!,
         homepageUrl: 'https://www.postgresql.org',
         documentationUrl: 'https://www.postgresql.org/docs',
         createdBy: adminUser.id,
       })
       .returning()
-      .onConflictDoNothing()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('database')! }
+      })
       .then(rows => rows[0]);
 
     if (!postgres) {
@@ -174,7 +184,12 @@ export const seedEOL = async () => {
     }
 
     // Python
-    let python = await db.insert(eolProducts).values({name: 'Python', slug: 'python', vendor: 'Python Software Foundation', description: 'High-level programming language', productType: 'language', homepageUrl: 'https://www.python.org', documentationUrl: 'https://docs.python.org', createdBy: adminUser.id}).returning().onConflictDoNothing().then(rows => rows[0]);
+    let python = await db.insert(eolProducts).values({ name: 'Python', slug: 'python', vendor: 'Python Software Foundation', description: 'High-level programming language', categoryId: catMap.get('programming-language')!, homepageUrl: 'https://www.python.org', documentationUrl: 'https://docs.python.org', createdBy: adminUser.id }).returning()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('programming-language')! }
+      })
+      .then(rows => rows[0]);
     if (!python) { [python] = await db.select().from(eolProducts).where(eq(eolProducts.slug, 'python')).limit(1); }
 
     if (python) {
@@ -237,7 +252,12 @@ export const seedEOL = async () => {
     }
 
     // React
-    let react = await db.insert(eolProducts).values({name: 'React', slug: 'react', vendor: 'Meta (Facebook)', description: 'JavaScript library for building user interfaces', productType: 'framework', homepageUrl: 'https://react.dev', documentationUrl: 'https://react.dev/learn', createdBy: adminUser.id}).returning().onConflictDoNothing().then(rows => rows[0]);
+    let react = await db.insert(eolProducts).values({ name: 'React', slug: 'react', vendor: 'Meta (Facebook)', description: 'JavaScript library for building user interfaces', categoryId: catMap.get('framework')!, homepageUrl: 'https://react.dev', documentationUrl: 'https://react.dev/learn', createdBy: adminUser.id }).returning()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('framework')! }
+      })
+      .then(rows => rows[0]);
     if (!react) { [react] = await db.select().from(eolProducts).where(eq(eolProducts.slug, 'react')).limit(1); }
 
     if (react) {
@@ -273,7 +293,12 @@ export const seedEOL = async () => {
     }
 
     // Docker
-    let docker = await db.insert(eolProducts).values({name: 'Docker Engine', slug: 'docker-engine', vendor: 'Docker Inc.', description: 'Container runtime platform', productType: 'platform', homepageUrl: 'https://www.docker.com', documentationUrl: 'https://docs.docker.com', createdBy: adminUser.id}).returning().onConflictDoNothing().then(rows => rows[0]);
+    let docker = await db.insert(eolProducts).values({ name: 'Docker Engine', slug: 'docker-engine', vendor: 'Docker Inc.', description: 'Container runtime platform', categoryId: catMap.get('tool')!, homepageUrl: 'https://www.docker.com', documentationUrl: 'https://docs.docker.com', createdBy: adminUser.id }).returning()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('tool')! }
+      })
+      .then(rows => rows[0]);
     if (!docker) { [docker] = await db.select().from(eolProducts).where(eq(eolProducts.slug, 'docker-engine')).limit(1); }
 
     if (docker) {
@@ -318,7 +343,12 @@ export const seedEOL = async () => {
     }
 
     // Kubernetes
-    let k8s = await db.insert(eolProducts).values({name: 'Kubernetes', slug: 'kubernetes', vendor: 'Cloud Native Computing Foundation', description: 'Container orchestration platform', productType: 'platform', homepageUrl: 'https://kubernetes.io', documentationUrl: 'https://kubernetes.io/docs', createdBy: adminUser.id}).returning().onConflictDoNothing().then(rows => rows[0]);
+    let k8s = await db.insert(eolProducts).values({ name: 'Kubernetes', slug: 'kubernetes', vendor: 'Cloud Native Computing Foundation', description: 'Container orchestration platform', categoryId: catMap.get('tool')!, homepageUrl: 'https://kubernetes.io', documentationUrl: 'https://kubernetes.io/docs', createdBy: adminUser.id }).returning()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('tool')! }
+      })
+      .then(rows => rows[0]);
     if (!k8s) { [k8s] = await db.select().from(eolProducts).where(eq(eolProducts.slug, 'kubernetes')).limit(1); }
 
     if (k8s) {
@@ -363,7 +393,12 @@ export const seedEOL = async () => {
     }
 
     // Ubuntu
-    let ubuntu = await db.insert(eolProducts).values({name: 'Ubuntu', slug: 'ubuntu', vendor: 'Canonical', description: 'Debian-based Linux distribution', productType: 'os', homepageUrl: 'https://ubuntu.com', documentationUrl: 'https://help.ubuntu.com', createdBy: adminUser.id}).returning().onConflictDoNothing().then(rows => rows[0]);
+    let ubuntu = await db.insert(eolProducts).values({ name: 'Ubuntu', slug: 'ubuntu', vendor: 'Canonical', description: 'Debian-based Linux distribution', categoryId: catMap.get('os')!, homepageUrl: 'https://ubuntu.com', documentationUrl: 'https://help.ubuntu.com', createdBy: adminUser.id }).returning()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('os')! }
+      })
+      .then(rows => rows[0]);
     if (!ubuntu) { [ubuntu] = await db.select().from(eolProducts).where(eq(eolProducts.slug, 'ubuntu')).limit(1); }
 
     if (ubuntu) {
@@ -417,7 +452,12 @@ export const seedEOL = async () => {
     }
 
     // TypeScript
-    let typescript = await db.insert(eolProducts).values({name: 'TypeScript', slug: 'typescript', vendor: 'Microsoft', description: 'Typed superset of JavaScript', productType: 'language', homepageUrl: 'https://www.typescriptlang.org', documentationUrl: 'https://www.typescriptlang.org/docs', createdBy: adminUser.id}).returning().onConflictDoNothing().then(rows => rows[0]);
+    let typescript = await db.insert(eolProducts).values({ name: 'TypeScript', slug: 'typescript', vendor: 'Microsoft', description: 'Typed superset of JavaScript', categoryId: catMap.get('programming-language')!, homepageUrl: 'https://www.typescriptlang.org', documentationUrl: 'https://www.typescriptlang.org/docs', createdBy: adminUser.id }).returning()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('programming-language')! }
+      })
+      .then(rows => rows[0]);
     if (!typescript) { [typescript] = await db.select().from(eolProducts).where(eq(eolProducts.slug, 'typescript')).limit(1); }
 
     if (typescript) {
@@ -453,7 +493,12 @@ export const seedEOL = async () => {
     }
 
     // MySQL
-    let mysql = await db.insert(eolProducts).values({name: 'MySQL', slug: 'mysql', vendor: 'Oracle Corporation', description: 'Open-source relational database', productType: 'database', homepageUrl: 'https://www.mysql.com', documentationUrl: 'https://dev.mysql.com/doc', createdBy: adminUser.id}).returning().onConflictDoNothing().then(rows => rows[0]);
+    let mysql = await db.insert(eolProducts).values({ name: 'MySQL', slug: 'mysql', vendor: 'Oracle Corporation', description: 'Open-source relational database', categoryId: catMap.get('database')!, homepageUrl: 'https://www.mysql.com', documentationUrl: 'https://dev.mysql.com/doc', createdBy: adminUser.id }).returning()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('database')! }
+      })
+      .then(rows => rows[0]);
     if (!mysql) { [mysql] = await db.select().from(eolProducts).where(eq(eolProducts.slug, 'mysql')).limit(1); }
 
     if (mysql) {
@@ -507,7 +552,12 @@ export const seedEOL = async () => {
     }
 
     // MongoDB
-    let mongodb = await db.insert(eolProducts).values({name: 'MongoDB', slug: 'mongodb', vendor: 'MongoDB Inc.', description: 'Document-oriented NoSQL database', productType: 'database', homepageUrl: 'https://www.mongodb.com', documentationUrl: 'https://docs.mongodb.com', createdBy: adminUser.id}).returning().onConflictDoNothing().then(rows => rows[0]);
+    let mongodb = await db.insert(eolProducts).values({ name: 'MongoDB', slug: 'mongodb', vendor: 'MongoDB Inc.', description: 'Document-oriented NoSQL database', categoryId: catMap.get('database')!, homepageUrl: 'https://www.mongodb.com', documentationUrl: 'https://docs.mongodb.com', createdBy: adminUser.id }).returning()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('database')! }
+      })
+      .then(rows => rows[0]);
     if (!mongodb) { [mongodb] = await db.select().from(eolProducts).where(eq(eolProducts.slug, 'mongodb')).limit(1); }
 
     if (mongodb) {
@@ -552,7 +602,12 @@ export const seedEOL = async () => {
     }
 
     // Redis
-    let redis = await db.insert(eolProducts).values({name: 'Redis', slug: 'redis', vendor: 'Redis Ltd.', description: 'In-memory data structure store', productType: 'database', homepageUrl: 'https://redis.io', documentationUrl: 'https://redis.io/docs', createdBy: adminUser.id}).returning().onConflictDoNothing().then(rows => rows[0]);
+    let redis = await db.insert(eolProducts).values({ name: 'Redis', slug: 'redis', vendor: 'Redis Ltd.', description: 'In-memory data structure store', categoryId: catMap.get('database')!, homepageUrl: 'https://redis.io', documentationUrl: 'https://redis.io/docs', createdBy: adminUser.id }).returning()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('database')! }
+      })
+      .then(rows => rows[0]);
     if (!redis) { [redis] = await db.select().from(eolProducts).where(eq(eolProducts.slug, 'redis')).limit(1); }
 
     if (redis) {
@@ -597,7 +652,12 @@ export const seedEOL = async () => {
     }
 
     // Next.js
-    let nextjs = await db.insert(eolProducts).values({name: 'Next.js', slug: 'nextjs', vendor: 'Vercel', description: 'React framework for production', productType: 'framework', homepageUrl: 'https://nextjs.org', documentationUrl: 'https://nextjs.org/docs', createdBy: adminUser.id}).returning().onConflictDoNothing().then(rows => rows[0]);
+    let nextjs = await db.insert(eolProducts).values({ name: 'Next.js', slug: 'nextjs', vendor: 'Vercel', description: 'React framework for production', categoryId: catMap.get('framework')!, homepageUrl: 'https://nextjs.org', documentationUrl: 'https://nextjs.org/docs', createdBy: adminUser.id }).returning()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('framework')! }
+      })
+      .then(rows => rows[0]);
     if (!nextjs) { [nextjs] = await db.select().from(eolProducts).where(eq(eolProducts.slug, 'nextjs')).limit(1); }
 
     if (nextjs) {
@@ -633,7 +693,12 @@ export const seedEOL = async () => {
     }
 
     // Vue.js
-    let vue = await db.insert(eolProducts).values({name: 'Vue.js', slug: 'vue', vendor: 'Evan You', description: 'Progressive JavaScript framework', productType: 'framework', homepageUrl: 'https://vuejs.org', documentationUrl: 'https://vuejs.org/guide', createdBy: adminUser.id}).returning().onConflictDoNothing().then(rows => rows[0]);
+    let vue = await db.insert(eolProducts).values({ name: 'Vue.js', slug: 'vue', vendor: 'Evan You', description: 'Progressive JavaScript framework', categoryId: catMap.get('framework')!, homepageUrl: 'https://vuejs.org', documentationUrl: 'https://vuejs.org/guide', createdBy: adminUser.id }).returning()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('framework')! }
+      })
+      .then(rows => rows[0]);
     if (!vue) { [vue] = await db.select().from(eolProducts).where(eq(eolProducts.slug, 'vue')).limit(1); }
 
     if (vue) {
@@ -660,7 +725,12 @@ export const seedEOL = async () => {
     }
 
     // Angular
-    let angular = await db.insert(eolProducts).values({name: 'Angular', slug: 'angular', vendor: 'Google', description: 'Platform for building web applications', productType: 'framework', homepageUrl: 'https://angular.io', documentationUrl: 'https://angular.io/docs', createdBy: adminUser.id}).returning().onConflictDoNothing().then(rows => rows[0]);
+    let angular = await db.insert(eolProducts).values({ name: 'Angular', slug: 'angular', vendor: 'Google', description: 'Platform for building web applications', categoryId: catMap.get('framework')!, homepageUrl: 'https://angular.io', documentationUrl: 'https://angular.io/docs', createdBy: adminUser.id }).returning()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('framework')! }
+      })
+      .then(rows => rows[0]);
     if (!angular) { [angular] = await db.select().from(eolProducts).where(eq(eolProducts.slug, 'angular')).limit(1); }
 
     if (angular) {
@@ -705,7 +775,12 @@ export const seedEOL = async () => {
     }
 
     // Debian
-    let debian = await db.insert(eolProducts).values({name: 'Debian', slug: 'debian', vendor: 'Debian Project', description: 'Free and open-source Linux distribution', productType: 'os', homepageUrl: 'https://www.debian.org', documentationUrl: 'https://www.debian.org/doc', createdBy: adminUser.id}).returning().onConflictDoNothing().then(rows => rows[0]);
+    let debian = await db.insert(eolProducts).values({ name: 'Debian', slug: 'debian', vendor: 'Debian Project', description: 'Free and open-source Linux distribution', categoryId: catMap.get('os')!, homepageUrl: 'https://www.debian.org', documentationUrl: 'https://www.debian.org/doc', createdBy: adminUser.id }).returning()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('os')! }
+      })
+      .then(rows => rows[0]);
     if (!debian) { [debian] = await db.select().from(eolProducts).where(eq(eolProducts.slug, 'debian')).limit(1); }
 
     if (debian) {
@@ -741,7 +816,12 @@ export const seedEOL = async () => {
     }
 
     // .NET
-    let dotnet = await db.insert(eolProducts).values({name: '.NET', slug: 'dotnet', vendor: 'Microsoft', description: 'Free, cross-platform, open-source developer platform', productType: 'runtime', homepageUrl: 'https://dotnet.microsoft.com', documentationUrl: 'https://learn.microsoft.com/dotnet', createdBy: adminUser.id}).returning().onConflictDoNothing().then(rows => rows[0]);
+    let dotnet = await db.insert(eolProducts).values({ name: '.NET', slug: 'dotnet', vendor: 'Microsoft', description: 'Free, cross-platform, open-source developer platform', categoryId: catMap.get('runtime')!, homepageUrl: 'https://dotnet.microsoft.com', documentationUrl: 'https://learn.microsoft.com/dotnet', createdBy: adminUser.id }).returning()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('runtime')! }
+      })
+      .then(rows => rows[0]);
     if (!dotnet) { [dotnet] = await db.select().from(eolProducts).where(eq(eolProducts.slug, 'dotnet')).limit(1); }
 
     if (dotnet) {
@@ -786,7 +866,12 @@ export const seedEOL = async () => {
     }
 
     // Go (Golang)
-    let golang = await db.insert(eolProducts).values({name: 'Go', slug: 'go', vendor: 'Google', description: 'Statically typed, compiled programming language', productType: 'language', homepageUrl: 'https://go.dev', documentationUrl: 'https://go.dev/doc', createdBy: adminUser.id}).returning().onConflictDoNothing().then(rows => rows[0]);
+    let golang = await db.insert(eolProducts).values({ name: 'Go', slug: 'go', vendor: 'Google', description: 'Statically typed, compiled programming language', categoryId: catMap.get('programming-language')!, homepageUrl: 'https://go.dev', documentationUrl: 'https://go.dev/doc', createdBy: adminUser.id }).returning()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('programming-language')! }
+      })
+      .then(rows => rows[0]);
     if (!golang) { [golang] = await db.select().from(eolProducts).where(eq(eolProducts.slug, 'go')).limit(1); }
 
     if (golang) {
@@ -822,7 +907,12 @@ export const seedEOL = async () => {
     }
 
     // Nginx
-    let nginx = await db.insert(eolProducts).values({name: 'NGINX', slug: 'nginx', vendor: 'F5, Inc.', description: 'Web server and reverse proxy', productType: 'platform', homepageUrl: 'https://nginx.org', documentationUrl: 'https://nginx.org/en/docs', createdBy: adminUser.id}).returning().onConflictDoNothing().then(rows => rows[0]);
+    let nginx = await db.insert(eolProducts).values({ name: 'NGINX', slug: 'nginx', vendor: 'F5, Inc.', description: 'Web server and reverse proxy', categoryId: catMap.get('tool')!, homepageUrl: 'https://nginx.org', documentationUrl: 'https://nginx.org/en/docs', createdBy: adminUser.id }).returning()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('tool')! }
+      })
+      .then(rows => rows[0]);
     if (!nginx) { [nginx] = await db.select().from(eolProducts).where(eq(eolProducts.slug, 'nginx')).limit(1); }
 
     if (nginx) {
@@ -858,7 +948,12 @@ export const seedEOL = async () => {
     }
 
     // Elasticsearch
-    let elasticsearch = await db.insert(eolProducts).values({name: 'Elasticsearch', slug: 'elasticsearch', vendor: 'Elastic', description: 'Distributed search and analytics engine', productType: 'database', homepageUrl: 'https://www.elastic.co/elasticsearch', documentationUrl: 'https://www.elastic.co/guide', createdBy: adminUser.id}).returning().onConflictDoNothing().then(rows => rows[0]);
+    let elasticsearch = await db.insert(eolProducts).values({ name: 'Elasticsearch', slug: 'elasticsearch', vendor: 'Elastic', description: 'Distributed search and analytics engine', categoryId: catMap.get('database')!, homepageUrl: 'https://www.elastic.co/elasticsearch', documentationUrl: 'https://www.elastic.co/guide', createdBy: adminUser.id }).returning()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('database')! }
+      })
+      .then(rows => rows[0]);
     if (!elasticsearch) { [elasticsearch] = await db.select().from(eolProducts).where(eq(eolProducts.slug, 'elasticsearch')).limit(1); }
 
     if (elasticsearch) {
@@ -894,7 +989,12 @@ export const seedEOL = async () => {
     }
 
     // Ruby
-    let ruby = await db.insert(eolProducts).values({name: 'Ruby', slug: 'ruby', vendor: 'Ruby Core Team', description: 'Dynamic, open source programming language', productType: 'language', homepageUrl: 'https://www.ruby-lang.org', documentationUrl: 'https://www.ruby-lang.org/en/documentation', createdBy: adminUser.id}).returning().onConflictDoNothing().then(rows => rows[0]);
+    let ruby = await db.insert(eolProducts).values({ name: 'Ruby', slug: 'ruby', vendor: 'Ruby Core Team', description: 'Dynamic, open source programming language', categoryId: catMap.get('programming-language')!, homepageUrl: 'https://www.ruby-lang.org', documentationUrl: 'https://www.ruby-lang.org/en/documentation', createdBy: adminUser.id }).returning()
+      .onConflictDoUpdate({
+        target: eolProducts.slug,
+        set: { categoryId: catMap.get('programming-language')! }
+      })
+      .then(rows => rows[0]);
     if (!ruby) { [ruby] = await db.select().from(eolProducts).where(eq(eolProducts.slug, 'ruby')).limit(1); }
 
     if (ruby) {

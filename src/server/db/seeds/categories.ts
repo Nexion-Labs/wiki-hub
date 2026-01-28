@@ -1,3 +1,4 @@
+import { eq, isNotNull, isNull, not } from 'drizzle-orm';
 import { db } from '../client';
 import { categories } from '../schema';
 
@@ -72,6 +73,7 @@ export const seedCategories = async () => {
   ];
 
   try {
+    await db.delete(categories).where(isNotNull(categories.id));
     for (const category of categoryData) {
       await db.insert(categories).values(category).onConflictDoNothing();
     }

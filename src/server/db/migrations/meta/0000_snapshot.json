@@ -1,5 +1,5 @@
 {
-  "id": "ee9d7964-071b-4cca-b8e6-ccbac99fd9ad",
+  "id": "798d1640-ccf6-4e98-a483-b39c9cfe0eb3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1118,6 +1118,72 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.eol_categories": {
+      "name": "eol_categories",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "code": {
+          "name": "code",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "icon": {
+          "name": "icon",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "eol_categories_code_unique": {
+          "name": "eol_categories_code_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "code"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.eol_products": {
       "name": "eol_products",
       "schema": "",
@@ -1153,9 +1219,9 @@
           "primaryKey": false,
           "notNull": false
         },
-        "product_type": {
-          "name": "product_type",
-          "type": "varchar(100)",
+        "category_id": {
+          "name": "category_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -1227,11 +1293,11 @@
           "method": "btree",
           "with": {}
         },
-        "idx_eol_products_type": {
-          "name": "idx_eol_products_type",
+        "idx_eol_products_category": {
+          "name": "idx_eol_products_category",
           "columns": [
             {
-              "expression": "product_type",
+              "expression": "category_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1244,6 +1310,19 @@
         }
       },
       "foreignKeys": {
+        "eol_products_category_id_eol_categories_id_fk": {
+          "name": "eol_products_category_id_eol_categories_id_fk",
+          "tableFrom": "eol_products",
+          "tableTo": "eol_categories",
+          "columnsFrom": [
+            "category_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "eol_products_created_by_users_id_fk": {
           "name": "eol_products_created_by_users_id_fk",
           "tableFrom": "eol_products",

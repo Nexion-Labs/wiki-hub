@@ -2,7 +2,9 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useMemo } from 'react';
 import { listProducts, getExpiringVersions } from '../server/functions/eol';
+import { listEOLCategoriesFn } from '../server/functions/eol-categories';
 import { Card, Badge, LoadingState, EmptyState, Input, Button } from '../components';
+import { GridIcon, ListIcon } from '../components/icons';
 
 // Helper functions
 const formatDate = (date: string | null | undefined) => {
@@ -28,28 +30,7 @@ const getUrgencyLevel = (days: number | null) => {
   return { level: 'safe', color: 'emerald', icon: '✅', text: 'An toàn' };
 };
 
-const productTypeIcons: Record<string, string> = {
-  'programming-language': '💻',
-  'framework': '🏗️',
-  'database': '🗄️',
-  'runtime': '⚙️',
-  'os': '🖥️',
-  'library': '📚',
-  'tool': '🔧',
-  'cloud': '☁️',
-  'default': '📦',
-};
-
-const productTypeLabels: Record<string, string> = {
-  'programming-language': 'Ngôn ngữ lập trình',
-  'framework': 'Framework',
-  'database': 'Cơ sở dữ liệu',
-  'runtime': 'Runtime',
-  'os': 'Hệ điều hành',
-  'library': 'Thư viện',
-  'tool': 'Công cụ',
-  'cloud': 'Dịch vụ Cloud',
-};
+// Product types configuration removed (now fetched via API)
 
 function EOLTrackerPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -70,17 +51,35 @@ function EOLTrackerPage() {
     queryFn: () => getExpiringVersions({ data: { daysAhead: 90 } }),
   });
 
+  // Fetch categories
+  const { data: categoriesData, isLoading: loadingCategories } = useQuery({
+    queryKey: ['eol-categories'],
+    queryFn: () => listEOLCategoriesFn(),
+  });
+
   const products = (productsData?.success ? productsData.data : []) as any[];
   const expiringVersions = (expiringData?.success ? expiringData.data : []) as any[];
+  const categories = (categoriesData?.success ? categoriesData.data : []) as any[];
 
-  // Get unique product types
-  const productTypes = [...new Set(products.map((p: any) => p.productType).filter(Boolean))];
+  // Helper maps for icons and labels
+  const categoryMap = useMemo(() => {
+    const map = new Map<string, { icon: string; name: string }>();
+    categories.forEach((cat: any) => {
+      map.set(cat.id, { icon: cat.icon, name: cat.name });
+    });
+    return map;
+  }, [categories]);
+
+  const availableCategories = useMemo(() => {
+    const usedCategoryIds = new Set(products.map((p: any) => p.categoryId).filter(Boolean));
+    return categories.filter((cat: any) => usedCategoryIds.has(cat.id) || true); // Show all categories for filter? Or only used ones? Let's show all available from API.
+  }, [products, categories]);
 
   // Filter products
   const filteredProducts = products.filter((product: any) => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.vendor?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = selectedType === 'all' || product.productType === selectedType;
+    const matchesType = selectedType === 'all' || product.categoryId === selectedType;
     return matchesSearch && matchesType;
   });
 
@@ -131,13 +130,10 @@ function EOLTrackerPage() {
   const totalExpired = expiredVersions.length;
   const totalLts = expiringVersions.filter((v: any) => v.isLts).length;
 
-  // Count versions by product type
-  const productsByType = productTypes.reduce((acc: Record<string, number>, type: string) => {
-    acc[type] = products.filter((p: any) => p.productType === type).length;
-    return acc;
-  }, {});
+  // Count versions by product type is replaced by logic in dashboard if needed, or removed if not displayed
+  // const productsByType = ... (removed for dynamic categories)
 
-  if (loadingProducts || loadingExpiring) {
+  if (loadingProducts || loadingExpiring || loadingCategories) {
     return <LoadingState text="Đang tải dữ liệu EOL Tracker..." />;
   }
 
@@ -155,18 +151,14 @@ function EOLTrackerPage() {
             className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
             title="Grid view"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-            </svg>
+            <GridIcon className="w-5 h-5" />
           </button>
           <button
             onClick={() => setViewMode('list')}
             className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
             title="List view"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-            </svg>
+            <ListIcon className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -310,54 +302,66 @@ function EOLTrackerPage() {
         </div>
       )}
 
-      {/* Search and Filter */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
-            <input
-              type="text"
-              placeholder="Tìm kiếm sản phẩm..."
-              value={searchQuery}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-            />
+      {/* Browse Categories */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <span>🗂️</span> Duyệt theo danh mục
+        </h2>
+
+        {loadingCategories ? (
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-10 w-24 bg-slate-100 rounded-lg animate-pulse" />)}
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
             <button
               onClick={() => handleFilterChange('all')}
-              className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${selectedType === 'all'
-                ? 'bg-emerald-100 text-emerald-700 font-medium'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              className={`p-3 rounded-lg border transition-all flex flex-col items-center gap-2 text-center ${selectedType === 'all'
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm'
+                : 'bg-white border-slate-100 text-slate-600 hover:border-emerald-200 hover:shadow-sm'
                 }`}
             >
-              Tất cả
+              <span className="text-2xl">🌍</span>
+              <span className="font-medium text-sm">Tất cả</span>
             </button>
-            {productTypes.map((type) => (
+
+            {categories.map((cat: any) => (
               <button
-                key={type}
-                onClick={() => handleFilterChange(type)}
-                className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors flex items-center gap-2 ${selectedType === type
-                  ? 'bg-emerald-100 text-emerald-700 font-medium'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                key={cat.id}
+                onClick={() => handleFilterChange(cat.id)}
+                className={`p-3 rounded-lg border transition-all flex flex-col items-center gap-2 text-center ${selectedType === cat.id
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm'
+                  : 'bg-white border-slate-100 text-slate-600 hover:border-emerald-200 hover:shadow-sm'
                   }`}
               >
-                <span>{productTypeIcons[type] || productTypeIcons.default}</span>
-                {productTypeLabels[type] || type}
+                <span className="text-2xl">{cat.icon}</span>
+                <span className="font-medium text-sm truncate w-full">{cat.name}</span>
               </button>
             ))}
           </div>
-        </div>
+        )}
+      </div>
+
+      {/* Search Bar */}
+      <div className="relative">
+        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">🔍</span>
+        <input
+          type="text"
+          placeholder="Tìm kiếm sản phẩm theo tên, nhà phát hành..."
+          value={searchQuery}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-xl shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-lg transition-shadow"
+        />
       </div>
 
       {/* Products Grid/List */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="p-4 border-b border-slate-200 flex justify-between items-center">
           <h2 className="text-xl font-semibold text-slate-800">📦 Danh sách sản phẩm</h2>
-          <span className="text-sm text-slate-500">{filteredProducts.length} sản phẩm</span>
+          <span className="text-sm text-slate-500">{filteredProducts?.length} sản phẩm</span>
         </div>
 
-        {filteredProducts.length > 0 ? (
+        {filteredProducts?.length > 0 ? (
           viewMode === 'grid' ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
               {paginatedProducts.map((product: any) => {
@@ -383,7 +387,7 @@ function EOLTrackerPage() {
                   >
                     <div className="flex items-start gap-3">
                       <div className="text-3xl">
-                        {productTypeIcons[product.productType] || productTypeIcons.default}
+                        {categoryMap.get(product.categoryId)?.icon || '📦'}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-slate-800 group-hover:text-emerald-700 transition-colors truncate">
@@ -393,9 +397,9 @@ function EOLTrackerPage() {
                           <p className="text-sm text-slate-500 truncate">{product.vendor}</p>
                         )}
                         <div className="flex flex-wrap gap-1 mt-2">
-                          {product.productType && (
+                          {product.categoryId && (
                             <span className="inline-block px-2 py-0.5 bg-slate-200 text-slate-600 rounded text-xs">
-                              {productTypeLabels[product.productType] || product.productType}
+                              {categoryMap.get(product.categoryId)?.name || 'Unknown'}
                             </span>
                           )}
                           {product.latestVersion && (
@@ -406,10 +410,9 @@ function EOLTrackerPage() {
                         </div>
                       </div>
                       <span className="text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                        →
+                        ⟶
                       </span>
                     </div>
-
                     {/* Product Stats */}
                     <div className="mt-3 pt-3 border-t border-slate-200 grid grid-cols-2 gap-2 text-xs">
                       <div className="flex items-center gap-1.5 text-slate-500">
@@ -468,7 +471,7 @@ function EOLTrackerPage() {
                     className="flex items-center gap-4 p-4 hover:bg-slate-50 transition-colors"
                   >
                     <div className="text-2xl">
-                      {productTypeIcons[product.productType] || productTypeIcons.default}
+                      {categoryMap.get(product.categoryId)?.icon || '📦'}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -503,12 +506,12 @@ function EOLTrackerPage() {
                         <span>v{nearestExpiring.versionNumber}: {formatDate(nearestExpiring.eolDate)}</span>
                       </div>
                     )}
-                    {product.productType && (
+                    {product.categoryId && (
                       <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-xs hidden md:block">
-                        {productTypeLabels[product.productType] || product.productType}
+                        {categoryMap.get(product.categoryId)?.name || 'Unknown'}
                       </span>
                     )}
-                    <span className="text-emerald-600">→</span>
+                    <span className="text-emerald-600">⟶</span>
                   </Link>
                 );
               })}
@@ -674,7 +677,7 @@ function EOLTrackerPage() {
                           params={{ slug: version.product?.slug }}
                           className="flex items-center gap-2 text-slate-800 hover:text-emerald-600"
                         >
-                          <span>{productTypeIcons[version.product?.productType] || productTypeIcons.default}</span>
+                          <span>{categoryMap.get(version.product?.categoryId)?.icon || '📦'}</span>
                           <span className="font-medium">{version.product?.name}</span>
                         </Link>
                       </td>

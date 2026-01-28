@@ -9,3 +9,6 @@ export { Alert } from './ui/Alert';
 export { Spinner, LoadingState, LoadingOverlay } from './ui/Spinner';
 export { EmptyState } from './ui/EmptyState';
 export { ConfirmDialog, type ConfirmDialogProps } from './ui/ConfirmDialog';
+
+// Icons
+export * from './icons';

@@ -1,7 +1,8 @@
 import { db } from '../db/client';
 import { eolProducts, eolVersions, eolAlerts } from '../db/schema';
-import { eq, and, desc, lt } from 'drizzle-orm';
+import { eq, and, desc, lt, inArray } from 'drizzle-orm';
 import type { NewEOLProduct, NewEOLVersion, NewEOLAlert } from '../db/schema';
+import { LifecycleStage } from '../../types/eol';
 
 export class EOLRepository {
   // Product methods
@@ -68,6 +69,14 @@ export class EOLRepository {
       .orderBy(desc(eolVersions.releaseDate));
   }
 
+  async findVersionsByProductIds(productIds: string[]) {
+    return await db
+      .select()
+      .from(eolVersions)
+      .where(inArray(eolVersions.productId, productIds))
+      .orderBy(desc(eolVersions.releaseDate));
+  }
+
   async findVersionById(id: string) {
     const [version] = await db
       .select()
@@ -87,7 +96,7 @@ export class EOLRepository {
       .where(
         and(
           lt(eolVersions.eolDate, futureDate.toISOString().split('T')[0]),
-          eq(eolVersions.lifecycleStage, 'active')
+          eq(eolVersions.lifecycleStage, LifecycleStage.ACTIVE)
         )
       );
   }
