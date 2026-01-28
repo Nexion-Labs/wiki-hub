@@ -39,7 +39,7 @@ export function ConfirmDialog({
                     title={`${icons[variant]} ${title}`}
                     description={description}
                 />
-                <div className="p-6 pt-0 flex gap-3">
+                <div className="pt-6 flex gap-3">
                     <Button
                         variant={variant}
                         onClick={onConfirm}

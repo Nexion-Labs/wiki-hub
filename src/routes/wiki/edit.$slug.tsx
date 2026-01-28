@@ -107,7 +107,7 @@ function WikiEditPage() {
             Bài viết wiki bạn muốn chỉnh sửa không tồn tại.
           </p>
           <Link to="/wiki">
-            <Button className="w-full">⟵ Quay lại danh sách Wiki</Button>
+            <Button className="w-full">Quay lại danh sách Wiki</Button>
           </Link>
         </Card>
       </div>
@@ -174,7 +174,7 @@ function WikiEditPage() {
               variant="ghost"
               onClick={() => navigate({ to: '/wiki/$slug', params: { slug } })}
             >
-              ⟵ Hủy bỏ
+              Hủy bỏ
             </Button>
             <div className="flex gap-3">
               <Link to="/wiki/$slug" params={{ slug }}>

@@ -116,7 +116,7 @@ function DashboardPage() {
           <div className="p-4 border-b border-slate-200 flex justify-between items-center">
             <CardHeader title="📚 Bài viết Wiki gần đây" />
             <Link to="/wiki" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
-              Xem tất cả ⟶
+              Xem tất cả
             </Link>
           </div>
           <div className="divide-y divide-slate-100">
@@ -156,7 +156,7 @@ function DashboardPage() {
           <div className="p-4 border-b border-slate-200 flex justify-between items-center">
             <CardHeader title="⏰ Sản phẩm sắp hết hạn" />
             <Link to="/" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
-              Xem tất cả ⟶
+              Xem tất cả
             </Link>
           </div>
           <div className="divide-y divide-slate-100">

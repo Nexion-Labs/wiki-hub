@@ -12,3 +12,7 @@ export { ConfirmDialog, type ConfirmDialogProps } from './ui/ConfirmDialog';
 
 // Icons
 export * from './icons';
+
+// Markdown
+export { MarkdownRenderer } from './MarkdownRenderer';
+export { MarkdownGuide } from './MarkdownGuide';

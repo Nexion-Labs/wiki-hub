@@ -115,7 +115,7 @@ function EOLDetailPage() {
         <h1 className="text-2xl font-bold text-slate-800">Không tìm thấy sản phẩm</h1>
         <p className="text-slate-500 mt-2">Sản phẩm bạn tìm kiếm không tồn tại hoặc đã bị xóa.</p>
         <Link to="/" className="text-emerald-600 hover:underline mt-4 inline-block">
-          ⟵ Quay lại EOL Tracker
+          Quay lại EOL Tracker
         </Link>
       </div>
     );
@@ -123,6 +123,10 @@ function EOLDetailPage() {
 
   const product = productData.data;
   const versions = (versionsData?.success ? versionsData.data : []) as any[];
+
+  // Get category for product
+  const productCategory = categories.find((c: any) => c.id === product.categoryId);
+  const categoryIcon = productCategory?.icon || '📦';
 
   // Statistics
   const activeVersions = versions.filter((v: any) => {
@@ -158,8 +162,8 @@ function EOLDetailPage() {
               {product.iconUrl ? (
                 <img src={product.iconUrl} alt={product.name} className="w-16 h-16 rounded-lg bg-white p-2" />
               ) : (
-                <div className="w-16 h-16 rounded-lg bg-white/20 flex items-center justify-center text-3xl">
-                  📦
+                <div className="w-16 h-16 rounded-lg bg-white/20 flex items-center justify-center text-4xl">
+                  {categoryIcon}
                 </div>
               )}
               <div>

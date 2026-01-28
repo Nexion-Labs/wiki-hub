@@ -1,5 +1,6 @@
 import { createServerFn } from '@tanstack/react-start';
 import { EOLService } from '../services/eol.service';
+import type { ExpiringVersionsFilter } from '../../types/eol';
 
 const eolService = new EOLService();
 
@@ -46,7 +47,20 @@ export const getExpiringVersions = createServerFn({ method: 'GET' })
   .inputValidator((data: { daysAhead: number }) => data)
   .handler(async ({ data }) => {
     try {
-      const versions = await eolService.getExpiringVersions(data.daysAhead || 90);
+      const versions = await eolService.getNearExpiringVersions(data.daysAhead);
+      return { success: true, data: versions };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to get expiring versions';
+      return { success: false, error: message };
+    }
+  });
+
+// Get expiring versions with advanced filters
+export const getExpiringVersionsWithFilters = createServerFn({ method: 'GET' })
+  .inputValidator((data: { filters: ExpiringVersionsFilter }) => data)
+  .handler(async ({ data }) => {
+    try {
+      const versions = await eolService.getExpiringVersionsWithFilters(data.filters);
       return { success: true, data: versions };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to get expiring versions';
@@ -118,6 +132,18 @@ export const deleteVersionFn = createServerFn({ method: 'POST' })
       return { success: true };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to delete version';
+      return { success: false, error: message };
+    }
+  });
+
+// Get EOL dashboard summary
+export const getEOLDashboardSummary = createServerFn({ method: 'GET' })
+  .handler(async () => {
+    try {
+      const summary = await eolService.getDashboardSummary();
+      return { success: true, data: summary };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to get dashboard summary';
       return { success: false, error: message };
     }
   });

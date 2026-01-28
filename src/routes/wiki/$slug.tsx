@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { getWikiPageBySlug } from '../../server/functions/wiki';
-import { Button, Card, LoadingState, Badge } from '../../components';
+import { Button, Card, LoadingState, Badge, MarkdownRenderer } from '../../components';
 
 function WikiViewPage() {
   const { slug } = Route.useParams();
@@ -24,7 +24,7 @@ function WikiViewPage() {
             Bài viết wiki bạn yêu cầu không tồn tại hoặc đã bị xóa.
           </p>
           <Link to="/wiki">
-            <Button className="w-full">⟵ Quay lại danh sách Wiki</Button>
+            <Button className="w-full">Quay lại danh sách Wiki</Button>
           </Link>
         </Card>
       </div>
@@ -82,17 +82,14 @@ function WikiViewPage() {
 
         {/* Content */}
         <div className="p-8">
-          <article
-            className="prose prose-slate max-w-none prose-headings:text-slate-800 prose-a:text-emerald-600 prose-a:no-underline hover:prose-a:underline prose-code:bg-slate-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-900"
-            dangerouslySetInnerHTML={{ __html: page.content }}
-          />
+          <MarkdownRenderer content={page.contentMarkdown || page.content} />
         </div>
 
         {/* Footer */}
         <div className="border-t border-slate-200 px-8 py-4 bg-slate-50 flex items-center justify-between">
           <div className="flex items-center gap-4 text-sm text-slate-500">
-            <span>📅 Tạo lúc: {new Date(page.createdAt).toLocaleDateString('vi-VN')}</span>
-            {page.version && <span>📌 Phiên bản: {page.version}</span>}
+            <span>Tạo lúc: {new Date(page.createdAt).toLocaleDateString('vi-VN')}</span>
+            {page.version && <span>Phiên bản: {page.version}</span>}
           </div>
           <div className="flex gap-2">
             <Button variant="ghost" size="sm">
@@ -108,7 +105,7 @@ function WikiViewPage() {
       {/* Back Link */}
       <div className="text-center pt-4">
         <Link to="/wiki" className="text-emerald-600 hover:text-emerald-700 font-medium">
-          ⟵ Quay lại danh sách bài viết
+          Quay lại danh sách bài viết
         </Link>
       </div>
     </div>

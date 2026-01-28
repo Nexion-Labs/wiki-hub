@@ -243,7 +243,7 @@ function NotFoundComponent() {
               </p>
               <Link to="/">
                 <Button className="w-full">
-                  ⟵ Về trang chủ
+                  Về trang chủ
                 </Button>
               </Link>
             </Card>

@@ -137,7 +137,7 @@ Khối code
               variant="ghost"
               onClick={() => navigate({ to: '/wiki' })}
             >
-              ⟵ Quay lại
+              Quay lại
             </Button>
             <div className="flex gap-3">
               <Button

@@ -128,10 +128,7 @@ function EOLTrackerPage() {
   const totalCritical = criticalVersions.length;
   const expiredVersions = expiringVersions.filter((v: any) => getDaysUntil(v.eolDate)! < 0);
   const totalExpired = expiredVersions.length;
-  const totalLts = expiringVersions.filter((v: any) => v.isLts).length;
-
-  // Count versions by product type is replaced by logic in dashboard if needed, or removed if not displayed
-  // const productsByType = ... (removed for dynamic categories)
+  const totalLts = expiringVersions.filter((v: any) => v.lts).length;
 
   if (loadingProducts || loadingExpiring || loadingCategories) {
     return <LoadingState text="Đang tải dữ liệu EOL Tracker..." />;

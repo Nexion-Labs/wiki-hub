@@ -273,8 +273,8 @@ function AdminEOLPage() {
               {/* Product Header */}
               <div className="p-4 border-b border-slate-100 flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-linear-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center text-white font-bold">
-                    {product.name?.[0]?.toUpperCase() || '?'}
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center text-2xl">
+                    {categories.find((c: any) => c.id === product.categoryId)?.icon || '📦'}
                   </div>
                   <div>
                     <h3 className="font-semibold text-slate-800">{product.name}</h3>
