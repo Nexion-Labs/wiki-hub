@@ -125,7 +125,7 @@ function SettingsPage() {
                         : 'text-slate-600 hover:bg-slate-100'
                         }`}
                 >
-                    Danh mục EOL
+                    Phân loại phần mềm
                 </button>
             </div>
 

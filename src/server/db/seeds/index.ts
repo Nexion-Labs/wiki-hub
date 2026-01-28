@@ -9,6 +9,7 @@ import { client } from '../client';
 
 const runSeeds = async () => {
   console.log('🚀 Starting database seeding...');
+  console.log('');
 
   try {
     await seedRoles();
@@ -16,9 +17,10 @@ const runSeeds = async () => {
     await seedCategories();
     await seedTags();
     await seedEOLCategories();
-    await seedEOL();
+    await seedEOL({ clean: true }); // Clean before seeding
     await seedWikiPages();
 
+    console.log('');
     console.log('✨ All seeds completed successfully!');
   } catch (error) {
     console.error('❌ Seeding failed:', error);

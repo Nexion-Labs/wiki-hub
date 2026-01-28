@@ -221,7 +221,7 @@ function DashboardPage() {
                   <span className="font-medium text-slate-700 group-hover:text-emerald-700">Quản lý Users</span>
                 </div>
               </Link>
-              <Link to="/admin/eol">
+              <Link to="/admin/settings/eol">
                 <div className="p-4 rounded-lg border-2 border-dashed border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition-colors text-center group">
                   <span className="text-3xl block mb-2">⚙️</span>
                   <span className="font-medium text-slate-700 group-hover:text-emerald-700">Quản lý EOL</span>

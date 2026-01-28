@@ -112,8 +112,8 @@ function EOLDetailPage() {
   if (!productData?.success || !productData.data) {
     return (
       <div className="text-center py-12">
-        <h1 className="text-2xl font-bold text-slate-800">Không tìm thấy sản phẩm</h1>
-        <p className="text-slate-500 mt-2">Sản phẩm bạn tìm kiếm không tồn tại hoặc đã bị xóa.</p>
+        <h1 className="text-2xl font-bold text-slate-800">Không tìm thấy phần mềm</h1>
+        <p className="text-slate-500 mt-2">Phần mềm bạn tìm kiếm không tồn tại hoặc đã bị xóa.</p>
         <Link to="/" className="text-emerald-600 hover:underline mt-4 inline-block">
           Quay lại EOL Tracker
         </Link>

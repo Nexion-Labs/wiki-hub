@@ -167,7 +167,7 @@ function EOLTrackerPage() {
             <div className="p-2 bg-slate-100 rounded-lg text-2xl">📦</div>
             <div>
               <div className="text-2xl font-bold text-slate-800">{totalProducts}</div>
-              <div className="text-xs text-slate-500">Sản phẩm</div>
+              <div className="text-xs text-slate-500">Phần mềm</div>
             </div>
           </div>
         </div>
@@ -354,8 +354,8 @@ function EOLTrackerPage() {
       {/* Products Grid/List */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="p-4 border-b border-slate-200 flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-slate-800">📦 Danh sách sản phẩm</h2>
-          <span className="text-sm text-slate-500">{filteredProducts?.length} sản phẩm</span>
+          <h2 className="text-xl font-semibold text-slate-800">📦 Danh sách phần mềm</h2>
+          <span className="text-sm text-slate-500">{filteredProducts?.length} phần mềm</span>
         </div>
 
         {filteredProducts?.length > 0 ? (

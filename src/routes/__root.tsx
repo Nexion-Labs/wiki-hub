@@ -41,12 +41,11 @@ function Navbar() {
   };
 
   const navLinks = [
-    { to: '/', label: 'Sản phẩm EOL', public: true },
-    { to: '/wiki', label: 'Wiki', public: true },
+    { to: '/', label: 'Phần mềm', requireAuth: true, public: false },
+    { to: '/wiki', label: 'Wiki', requireAuth: true, public: false },
     { to: '/dashboard', label: 'Dashboard', requireAuth: true },
     { to: '/admin/users', label: 'Người dùng', adminOnly: true },
-    { to: '/admin/eol', label: 'Quản lý EOL', adminOnly: true },
-    { to: '/settings', label: 'Cài đặt', requireAuth: true },
+    { to: '/admin/settings', label: 'Cài đặt', requireAuth: true, adminOnly: true },
   ];
 
   const filteredLinks = navLinks.filter(link => {
