@@ -9,6 +9,8 @@ export { Alert } from './ui/Alert';
 export { Spinner, LoadingState, LoadingOverlay } from './ui/Spinner';
 export { EmptyState } from './ui/EmptyState';
 export { ConfirmDialog, type ConfirmDialogProps } from './ui/ConfirmDialog';
+export { Dialog, type DialogProps } from './ui/Dialog';
+export { AccessState } from './ui/AccessState';
 
 // Icons
 export * from './icons';

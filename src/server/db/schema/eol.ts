@@ -33,6 +33,7 @@ export const eolVersions = pgTable('eol_versions', {
   lts: boolean('lts').notNull().default(false),
   lifecycleStage: varchar('lifecycle_stage', { length: 50 }).notNull(),
   notes: text('notes'),
+  commandGuide: text('command_guide'),
   migrationGuidePageId: uuid('migration_guide_page_id').references(() => wikiPages.id),
   createdBy: uuid('created_by').notNull().references(() => users.id),
   createdAt: timestamp('created_at').notNull().defaultNow(),

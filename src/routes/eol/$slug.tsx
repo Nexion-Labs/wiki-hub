@@ -239,12 +239,12 @@ function EOLDetailPage() {
                     </div>
                     <div>
                       <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                        Quick Start Guide {latestVersion && <span className="text-emerald-500 ml-1">· v{latestVersion}</span>}
+                        Quick Start Guide {latestVersion && <span className="text-emerald-500 ml-1">· {latestVersion}</span>}
                       </h4>
                     </div>
                   </div>
                   <button
-                    onClick={() => handleCopy(`${product.commandGuide}${latestVersion || ''}`.trim(), 'latest-header')}
+                    onClick={() => handleCopy(`${product.commandGuide}`.trim(), 'latest-header')}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all duration-300 ${
                       copiedId === 'latest-header'
                         ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]'
@@ -267,7 +267,7 @@ function EOLDetailPage() {
                 <div className="font-mono text-sm sm:text-base flex items-center gap-3">
                   <span className="text-emerald-500/50 select-none shrink-0">$</span>
                   <code className="text-emerald-400 break-all">
-                    {product.commandGuide}{latestVersion}
+                    {product.commandGuide}
                   </code>
                 </div>
               </div>
@@ -399,13 +399,13 @@ function EOLDetailPage() {
                       <td className="px-4 py-4">
                         {product.commandGuide && (
                           <button
-                            onClick={() => handleCopy(`${product.commandGuide}${version.versionNumber}`.trim(), version.id)}
+                            onClick={() => handleCopy(`${product.commandGuide}`.trim(), version.id)}
                             className={`inline-flex items-center gap-2 px-2 py-1 border rounded transition-all duration-200 group/btn ${
                               copiedId === version.id
                                 ? 'bg-emerald-50 border-emerald-500 text-emerald-600'
                                 : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-500 hover:text-emerald-600 shadow-xs'
                             }`}
-                            title={`Copy: ${product.commandGuide}${version.versionNumber}`}
+                            title={`Copy: ${product.commandGuide}`}
                           >
                             {copiedId === version.id ? (
                               <CheckIcon size={12} className="animate-in zoom-in duration-200" />

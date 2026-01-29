@@ -1,5 +1,5 @@
 import { Button } from './Button';
-import { Card, CardHeader } from './Card';
+import { Dialog } from './Dialog';
 
 export interface ConfirmDialogProps {
     isOpen: boolean;
@@ -24,8 +24,6 @@ export function ConfirmDialog({
     variant = 'danger',
     isLoading = false,
 }: ConfirmDialogProps) {
-    if (!isOpen) return null;
-
     const icons = {
         danger: '⚠️',
         primary: 'ℹ️',
@@ -33,13 +31,14 @@ export function ConfirmDialog({
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <Card className="max-w-md mx-4">
-                <CardHeader
-                    title={`${icons[variant]} ${title}`}
-                    description={description}
-                />
-                <div className="pt-6 flex gap-3">
+        <Dialog
+            isOpen={isOpen}
+            onClose={onClose}
+            title={`${icons[variant]} ${title}`}
+            description={description}
+            size="md"
+            footer={
+                <>
                     <Button
                         variant={variant}
                         onClick={onConfirm}
@@ -54,8 +53,12 @@ export function ConfirmDialog({
                     >
                         {cancelText}
                     </Button>
-                </div>
-            </Card>
-        </div>
+                </>
+            }
+        >
+            <div className="text-slate-600">
+                {description}
+            </div>
+        </Dialog>
     );
 }

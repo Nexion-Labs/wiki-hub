@@ -232,7 +232,7 @@ function EOLTrackerPage() {
               className="mr-2"
               size="sm"
             >
-              + Thêm sản phẩm
+              Thêm sản phẩm
             </Button>
           )}
           <button
@@ -493,7 +493,7 @@ function EOLTrackerPage() {
                           )}
                           {product.latestVersion && (
                             <span className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
-                              v{product.latestVersion}
+                              {product.latestVersion}
                             </span>
                           )}
                         </div>
@@ -563,7 +563,7 @@ function EOLTrackerPage() {
                           </button>
                         </div>
                         <code className="block text-xs font-mono text-emerald-400 truncate whitespace-nowrap scrollbar-hide pr-2">
-                          $ {product.commandGuide}{product.latestVersion}
+                          $ {product.commandGuide}
                         </code>
                         {copiedId === product.id && (
                           <div className="absolute inset-0 bg-emerald-500/10 backdrop-blur-[1px] flex items-center justify-center animate-in fade-in duration-200">
@@ -606,7 +606,7 @@ function EOLTrackerPage() {
                         <h3 className="font-medium text-slate-800">{product.name}</h3>
                         {product.latestVersion && (
                           <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
-                            v{product.latestVersion}
+                            {product.latestVersion}
                           </span>
                         )}
                         {product.ltsVersion && (
@@ -625,11 +625,11 @@ function EOLTrackerPage() {
                           <div className="flex-1 flex items-center gap-2 px-2 py-1 bg-slate-900 rounded border border-slate-700 overflow-hidden shadow-sm">
                             <TerminalIcon size={10} className="text-emerald-500 shrink-0" />
                             <code className="text-[10px] font-mono text-emerald-400 truncate whitespace-nowrap">
-                              {product.commandGuide}{product.latestVersion}
+                              {product.commandGuide}
                             </code>
                           </div>
                           <button
-                            onClick={(e) => handleCopy(e, `${product.commandGuide}${product.latestVersion || ''}`.trim(), `list-${product.id}`)}
+                            onClick={(e) => handleCopy(e, `${product.commandGuide}`.trim(), `list-${product.id}`)}
                             className={`shrink-0 p-1 rounded border transition-all duration-200 ${copiedId === `list-${product.id}` ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-300'}`}
                             title="Sao chép lệnh"
                           >
@@ -881,13 +881,13 @@ function EOLTrackerPage() {
                       <td className="px-4 py-3 text-right">
                         {version.product?.commandGuide && (
                           <button
-                            onClick={(e) => handleCopy(e, `${version.product.commandGuide}${version.versionNumber}`.trim(), `table-${version.id}`)}
+                            onClick={(e) => handleCopy(e, `${version.product.commandGuide}`.trim(), `table-${version.id}`)}
                             className={`inline-flex items-center gap-2 px-2 py-1 border rounded transition-all duration-200 group/btn ${
                               copiedId === `table-${version.id}`
                                 ? 'bg-emerald-50 border-emerald-500 text-emerald-600'
                                 : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-500 hover:text-emerald-600 shadow-xs'
                             }`}
-                            title={`Copy: ${version.product.commandGuide}${version.versionNumber}`}
+                            title={`Copy: ${version.product.commandGuide}`}
                           >
                             {copiedId === `table-${version.id}` ? (
                               <CheckIcon size={12} className="animate-in zoom-in duration-200" />

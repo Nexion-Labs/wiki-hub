@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { listWikiPages } from '../../server/functions/wiki';
 import { getExpiringVersions } from '../../server/functions/eol';
 import { getSessionUser } from '../../server/functions/auth';
-import { Card, CardHeader, Badge, LoadingState, EmptyState, Button } from '../../components';
+import { Card, CardHeader, Badge, LoadingState, EmptyState, Button, AccessState } from '../../components';
 
 function DashboardPage() {
   // Get user from session cookies
@@ -40,18 +40,10 @@ function DashboardPage() {
   // Show access denied if not logged in
   if (!user) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Card className="max-w-md w-full text-center" padding="lg">
-          <div className="text-5xl mb-4">🔒</div>
-          <h1 className="text-2xl font-bold text-slate-800">Yêu cầu đăng nhập</h1>
-          <p className="text-slate-500 mt-2 mb-6">
-            Vui lòng đăng nhập để truy cập Dashboard.
-          </p>
-          <Link to="/login">
-            <Button className="w-full">Đăng nhập ngay</Button>
-          </Link>
-        </Card>
-      </div>
+      <AccessState
+        title="Yêu cầu đăng nhập"
+        description="Vui lòng đăng nhập để truy cập Dashboard."
+      />
     );
   }
 
@@ -170,7 +162,7 @@ function DashboardPage() {
                 >
                   <div>
                     <p className="font-medium text-slate-700 group-hover:text-emerald-600 transition-colors">
-                      {version.product?.name} <span className="text-slate-400">v{version.version}</span>
+                      {version.product?.name} <span className="text-slate-400">{version?.version}</span>
                     </p>
                     <p className="text-xs text-slate-500 mt-1">
                       Hết hạn: {new Date(version.eolDate).toLocaleDateString('vi-VN')}
@@ -184,7 +176,7 @@ function DashboardPage() {
             ) : (
               <div className="p-8">
                 <EmptyState
-                  icon="✅"
+                  icon="✔️"
                   title="Tuyệt vời!"
                   description="Không có sản phẩm nào sắp hết hạn trong 30 ngày tới"
                 />
@@ -203,28 +195,24 @@ function DashboardPage() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
           <Link to="/wiki/new">
             <div className="p-4 rounded-lg border-2 border-dashed border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition-colors text-center group">
-              <span className="text-3xl block mb-2">📝</span>
               <span className="font-medium text-slate-700 group-hover:text-emerald-700">Tạo Wiki mới</span>
             </div>
           </Link>
           <Link to="/">
             <div className="p-4 rounded-lg border-2 border-dashed border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition-colors text-center group">
-              <span className="text-3xl block mb-2">📊</span>
-              <span className="font-medium text-slate-700 group-hover:text-emerald-700">EOL Tracker</span>
+              <span className="font-medium text-slate-700 group-hover:text-emerald-700">Theo dõi phần mềm</span>
             </div>
           </Link>
           {user.role === 'admin' && (
             <>
               <Link to="/admin/users">
                 <div className="p-4 rounded-lg border-2 border-dashed border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition-colors text-center group">
-                  <span className="text-3xl block mb-2">👥</span>
-                  <span className="font-medium text-slate-700 group-hover:text-emerald-700">Quản lý Users</span>
+                  <span className="font-medium text-slate-700 group-hover:text-emerald-700">Quản lý người dùng</span>
                 </div>
               </Link>
               <Link to="/admin/settings/eol">
                 <div className="p-4 rounded-lg border-2 border-dashed border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition-colors text-center group">
-                  <span className="text-3xl block mb-2">⚙️</span>
-                  <span className="font-medium text-slate-700 group-hover:text-emerald-700">Quản lý EOL</span>
+                  <span className="font-medium text-slate-700 group-hover:text-emerald-700">Quản lý phần mềm</span>
                 </div>
               </Link>
             </>

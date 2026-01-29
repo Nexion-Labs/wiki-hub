@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { listUsers, updateUserFn, deleteUserFn } from '../../server/functions/user';
 import { getSessionUser } from '../../server/functions/auth';
-import { Button, Card, CardHeader, Badge, LoadingState, EmptyState, Alert } from '../../components';
+import { Button, Card, CardHeader, Badge, LoadingState, EmptyState, Alert, ConfirmDialog, AccessState } from '../../components';
 
 function AdminUsersPage() {
   const queryClient = useQueryClient();
@@ -49,18 +49,12 @@ function AdminUsersPage() {
 
   if (!user || user.role !== 'admin') {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Card className="max-w-md w-full text-center" padding="lg">
-          <div className="text-5xl mb-4">🚫</div>
-          <h1 className="text-2xl font-bold text-slate-800">Từ chối truy cập</h1>
-          <p className="text-slate-500 mt-2 mb-6">
-            Chỉ Admin mới có quyền truy cập trang này.
-          </p>
-          <Link to="/login">
-            <Button className="w-full">Đăng nhập với tài khoản Admin</Button>
-          </Link>
-        </Card>
-      </div>
+      <AccessState
+        icon="🚫"
+        title="Từ chối truy cập"
+        description="Chỉ Admin mới có quyền truy cập trang này."
+        buttonText="Đăng nhập với tài khoản Admin"
+      />
     );
   }
 
@@ -153,34 +147,14 @@ function AdminUsersPage() {
                           >
                             Sửa
                           </Button>
-                          {deleteConfirm === u.id ? (
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="danger"
-                                size="sm"
-                                onClick={() => deleteUserMutation.mutate(u.id)}
-                                isLoading={deleteUserMutation.isPending}
-                              >
-                                Xác nhận
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setDeleteConfirm(null)}
-                              >
-                                Hủy
-                              </Button>
-                            </div>
-                          ) : (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setDeleteConfirm(u.id)}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            >
-                              Xóa
-                            </Button>
-                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDeleteConfirm(u.id)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            Xóa
+                          </Button>
                         </div>
                       ) : (
                         <Badge variant="default" size="sm">Bạn</Badge>
@@ -203,6 +177,22 @@ function AdminUsersPage() {
           </table>
         </div>
       </Card >
+
+      <ConfirmDialog
+        isOpen={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={() => {
+          if (deleteConfirm) {
+            deleteUserMutation.mutate(deleteConfirm);
+          }
+        }}
+        title="Xác nhận xóa người dùng"
+        description={`Bạn có chắc chắn muốn xóa người dùng "${users.find((u: any) => u.id === deleteConfirm)?.users?.username || ''}"? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa"
+        cancelText="Hủy"
+        variant="danger"
+        isLoading={deleteUserMutation.isPending}
+      />
     </div >
   );
 }

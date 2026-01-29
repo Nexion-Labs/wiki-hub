@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { listProducts, createProductFn, deleteProductFn, createVersionFn, updateVersionFn, deleteVersionFn, getVersionsByProduct } from '../../server/functions/eol';
 import { listEOLCategoriesFn } from '../../server/functions/eol-categories';
 import { getSessionUser } from '../../server/functions/auth';
-import { Button, Input, Textarea, Card, CardHeader, Badge, LoadingState, EmptyState, Alert, Select, ConfirmDialog } from '../../components';
+import { Button, Input, Textarea, Select, Card, CardHeader, Badge, Dialog, ConfirmDialog, LoadingState, EmptyState, Alert, AccessState } from '../../components';
 import { LIFECYCLE_STAGE_OPTIONS } from '../../types/eol';
 
 const ITEMS_PER_PAGE = 10;
@@ -14,7 +14,8 @@ function AdminEOLPage() {
   const [showNewProduct, setShowNewProduct] = useState(false);
   const [showNewVersion, setShowNewVersion] = useState<string | null>(null);
   const [editingVersion, setEditingVersion] = useState<any>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; productId: string } | null>(null);
+  const [deleteProductConfirm, setDeleteProductConfirm] = useState<string | null>(null);
+  const [deleteVersionConfirm, setDeleteVersionConfirm] = useState<{ id: string; productId: string } | null>(null);
   const [newProduct, setNewProduct] = useState({ name: '', vendor: '', description: '', categoryId: '', homepageUrl: '', documentationUrl: '' });
   const [newVersion, setNewVersion] = useState({ version: '', eolDate: '', releaseDate: '', extendedSupportDate: '', lts: false, lifecycleStage: 'active' });
   const [currentPage, setCurrentPage] = useState(1);
@@ -62,7 +63,7 @@ function AdminEOLPage() {
     mutationFn: (id: string) => deleteProductFn({ data: { id } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['eol-products'] });
-      setDeleteConfirm(null);
+      setDeleteProductConfirm(null);
     },
   });
 
@@ -94,10 +95,10 @@ function AdminEOLPage() {
   const deleteVersionMutation = useMutation({
     mutationFn: (data: { id: string }) => deleteVersionFn({ data }),
     onSuccess: () => {
-      if (deleteConfirm?.productId) {
-        queryClient.invalidateQueries({ queryKey: ['eol-versions', deleteConfirm.productId] });
+      if (deleteVersionConfirm?.productId) {
+        queryClient.invalidateQueries({ queryKey: ['eol-versions', deleteVersionConfirm.productId] });
       }
-      setDeleteConfirm(null);
+      setDeleteVersionConfirm(null);
     },
   });
 
@@ -129,18 +130,12 @@ function AdminEOLPage() {
 
   if (!user || user.role !== 'admin') {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Card className="max-w-md w-full text-center" padding="lg">
-          <div className="text-5xl mb-4">🚫</div>
-          <h1 className="text-2xl font-bold text-slate-800">Từ chối truy cập</h1>
-          <p className="text-slate-500 mt-2 mb-6">
-            Chỉ Admin mới có quyền quản lý EOL.
-          </p>
-          <Link to="/login">
-            <Button className="w-full">Đăng nhập với tài khoản Admin</Button>
-          </Link>
-        </Card>
-      </div>
+      <AccessState
+        icon="🚫"
+        title="Từ chối truy cập"
+        description="Chỉ Admin mới có quyền quản lý EOL."
+        buttonText="Đăng nhập với tài khoản Admin"
+      />
     );
   }
 
@@ -296,34 +291,14 @@ function AdminEOLPage() {
                   >
                     {showNewVersion === product.id ? 'Đóng' : 'Thêm phiên bản'}
                   </Button>
-                  {deleteConfirm === product.id ? (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => deleteProductMutation.mutate(product.id)}
-                        isLoading={deleteProductMutation.isPending}
-                      >
-                        Xác nhận
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleteConfirm(null)}
-                      >
-                        Hủy
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setDeleteConfirm(product.id)}
-                      className="text-red-600 hover:bg-red-50"
-                    >
-                      Xóa
-                    </Button>
-                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setDeleteProductConfirm(product.id)}
+                    className="text-red-600 hover:bg-red-50"
+                  >
+                    Xóa
+                  </Button>
                 </div>
               </div>
 
@@ -423,7 +398,7 @@ function AdminEOLPage() {
                 onEdit={setEditingVersion}
                 onUpdate={updateVersionMutation.mutate}
                 isUpdating={updateVersionMutation.isPending}
-                onDelete={setDeleteConfirm}
+                onDelete={setDeleteVersionConfirm}
               />
             </Card>
           ))}
@@ -516,17 +491,34 @@ function AdminEOLPage() {
         </Card>
       )}
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Version Confirmation Dialog */}
       <ConfirmDialog
-        isOpen={!!deleteConfirm}
-        onClose={() => setDeleteConfirm(null)}
-        onConfirm={() => deleteVersionMutation.mutate({ id: deleteConfirm!.id })}
-        title="Xác nhận xóa"
+        isOpen={!!deleteVersionConfirm}
+        onClose={() => setDeleteVersionConfirm(null)}
+        onConfirm={() => deleteVersionMutation.mutate({ id: deleteVersionConfirm!.id })}
+        title="Xác nhận xóa phiên bản"
         description="Bạn có chắc chắn muốn xóa version này? Hành động này không thể hoàn tác."
         confirmText="Xóa"
         cancelText="Hủy"
         variant="danger"
         isLoading={deleteVersionMutation.isPending}
+      />
+
+      {/* Delete Product Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={!!deleteProductConfirm}
+        onClose={() => setDeleteProductConfirm(null)}
+        onConfirm={() => {
+          if (deleteProductConfirm) {
+            deleteProductMutation.mutate(deleteProductConfirm);
+          }
+        }}
+        title="Xác nhận xóa phần mềm"
+        description={`Bạn có chắc chắn muốn xóa phần mềm "${products?.find((p: any) => p.id === deleteProductConfirm)?.name}"? Hành động này sẽ thực hiện soft delete.`}
+        confirmText="Xóa"
+        cancelText="Hủy"
+        variant="danger"
+        isLoading={deleteProductMutation.isPending}
       />
     </div>
   );

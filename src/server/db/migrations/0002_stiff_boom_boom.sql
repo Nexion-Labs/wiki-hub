@@ -1,0 +1,1 @@
+ALTER TABLE "eol_versions" ADD COLUMN "command_guide" text;

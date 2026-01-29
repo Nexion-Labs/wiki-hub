@@ -111,7 +111,7 @@ export const deleteProductFn = createServerFn({ method: 'POST' })
 
 // Create version
 export const createVersionFn = createServerFn({ method: 'POST' })
-  .inputValidator((data: { productId: string; version: string; eolDate?: string; releaseDate?: string; extendedSupportDate?: string; lts?: boolean; lifecycleStage?: string; userId: string }) => data)
+  .inputValidator((data: { productId: string; version: string; eolDate?: string; releaseDate?: string; extendedSupportDate?: string; lts?: boolean; lifecycleStage?: string; commandGuide?: string; userId: string }) => data)
   .handler(async ({ data }) => {
     try {
       const { userId, ...versionData } = data;
@@ -125,7 +125,7 @@ export const createVersionFn = createServerFn({ method: 'POST' })
 
 // Update version
 export const updateVersionFn = createServerFn({ method: 'POST' })
-  .inputValidator((data: { id: string; version?: string; eolDate?: string; releaseDate?: string; extendedSupportDate?: string; lts?: boolean; lifecycleStage?: string }) => data)
+  .inputValidator((data: { id: string; version?: string; eolDate?: string; releaseDate?: string; extendedSupportDate?: string; lts?: boolean; lifecycleStage?: string; commandGuide?: string }) => data)
   .handler(async ({ data }) => {
     try {
       const { id, ...updateData } = data;
