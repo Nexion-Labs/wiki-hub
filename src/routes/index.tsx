@@ -1,8 +1,10 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute, Link, redirect } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useMemo } from 'react';
 import { listProducts, getExpiringVersions } from '../server/functions/eol';
 import { listEOLCategoriesFn } from '../server/functions/eol-categories';
+import { getSessionUser } from '../server/functions/auth';
+
 import { Card, Badge, LoadingState, EmptyState, Input, Button } from '../components';
 import { GridIcon, ListIcon } from '../components/icons';
 
@@ -800,5 +802,13 @@ function EOLTrackerPage() {
 }
 
 export const Route = createFileRoute('/')({
+  beforeLoad: async () => {
+    const authData = await getSessionUser();
+    if (!authData?.success || !authData.data) {
+      throw redirect({
+        to: '/login',
+      });
+    }
+  },
   component: EOLTrackerPage,
 });
