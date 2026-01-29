@@ -70,7 +70,7 @@ export const getExpiringVersionsWithFilters = createServerFn({ method: 'GET' })
 
 // Create product (admin only)
 export const createProductFn = createServerFn({ method: 'POST' })
-  .inputValidator((data: { name: string; vendor?: string; description?: string; categoryId: string; homepageUrl?: string; documentationUrl?: string; userId: string }) => data)
+  .inputValidator((data: { name: string; vendor?: string; description?: string; categoryId: string; homepageUrl?: string; documentationUrl?: string; commandGuide?: string; userId: string }) => data)
   .handler(async ({ data }) => {
     try {
       const { userId, ...productData } = data;
@@ -84,7 +84,7 @@ export const createProductFn = createServerFn({ method: 'POST' })
 
 // Update product (admin only)
 export const updateProductFn = createServerFn({ method: 'POST' })
-  .inputValidator((data: { id: string; name?: string; vendor?: string; description?: string; categoryId?: string; homepageUrl?: string; documentationUrl?: string }) => data)
+  .inputValidator((data: { id: string; name?: string; vendor?: string; description?: string; categoryId?: string; homepageUrl?: string; documentationUrl?: string; commandGuide?: string }) => data)
   .handler(async ({ data }) => {
     try {
       const { id, ...updateData } = data;

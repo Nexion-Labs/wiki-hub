@@ -11,6 +11,7 @@ export const eolProducts = pgTable('eol_products', {
   categoryId: uuid('category_id').references(() => eolCategories.id),
   homepageUrl: varchar('homepage_url', { length: 500 }),
   documentationUrl: varchar('documentation_url', { length: 500 }),
+  commandGuide: text('command_guide'),
   license: varchar('license', { length: 100 }),
   iconUrl: varchar('icon_url', { length: 500 }),
   isActive: boolean('is_active').notNull().default(true),

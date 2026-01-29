@@ -61,6 +61,7 @@ export const seedEOL = async (options: { clean?: boolean } = {}) => {
           categoryId,
           homepageUrl: productData.homepageUrl,
           documentationUrl: productData.documentationUrl,
+          commandGuide: productData.commandGuide,
           license: productData.license,
           createdBy: adminUser.id,
         })

@@ -22,6 +22,7 @@ export interface ProductData {
   categoryCode: string;
   homepageUrl: string;
   documentationUrl: string;
+  commandGuide?: string;
   license?: string;
   versions: VersionData[];
 }
@@ -48,6 +49,7 @@ export const eolProductsData: ProductData[] = [
     categoryCode: 'runtime',
     homepageUrl: 'https://nodejs.org',
     documentationUrl: 'https://nodejs.org/docs',
+    commandGuide: 'nvm install 22 && node --version',
     license: 'MIT',
     versions: [
       {
@@ -104,6 +106,7 @@ export const eolProductsData: ProductData[] = [
     categoryCode: 'database',
     homepageUrl: 'https://www.postgresql.org',
     documentationUrl: 'https://www.postgresql.org/docs',
+    commandGuide: 'docker run --name pg-server -e POSTGRES_PASSWORD=mysecretpassword -d postgres:17',
     license: 'PostgreSQL License',
     versions: [
       {
@@ -166,6 +169,7 @@ export const eolProductsData: ProductData[] = [
     categoryCode: 'programming-language',
     homepageUrl: 'https://www.python.org',
     documentationUrl: 'https://docs.python.org',
+    commandGuide: 'python -m venv venv && source venv/bin/activate && python --version',
     license: 'PSF License',
     versions: [
       {

@@ -30,16 +30,22 @@ export class EOLService {
     const products = await eolRepository.findAllProducts(limit, offset);
     const productIds = products.map((p) => p.id);
     const versions = await eolRepository.findVersionsByProductIds(productIds);
-    const versionsCount = versions.reduce((acc, version) => {
-      acc[version.productId] = (acc[version.productId] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    return products.map((product) => {
+    const productsData = products.map((product) => {
+      const productVersions = versions
+        .filter((v) => v.productId === product.id)
+        .sort((a, b) => {
+          if (!a.releaseDate) return 1;
+          if (!b.releaseDate) return -1;
+          return new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime();
+        });
+
       return {
         ...product,
-        versionsCount: versionsCount[product.id] || 0,
+        versionsCount: productVersions.length,
+        latestVersion: productVersions[0]?.versionNumber || null,
       };
     });
+    return productsData;
   }
 
   async updateProduct(id: string, data: any) {

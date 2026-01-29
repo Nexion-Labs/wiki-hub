@@ -16,7 +16,7 @@ function AdminEOLPage() {
   const [showNewVersion, setShowNewVersion] = useState<string | null>(null);
   const [editingVersion, setEditingVersion] = useState<any>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; productId: string } | null>(null);
-  const [newProduct, setNewProduct] = useState({ name: '', vendor: '', description: '', categoryId: '', homepageUrl: '', documentationUrl: '' });
+  const [newProduct, setNewProduct] = useState({ name: '', vendor: '', description: '', categoryId: '', homepageUrl: '', documentationUrl: '', commandGuide: '' });
   const [newVersion, setNewVersion] = useState({ version: '', eolDate: '', releaseDate: '', extendedSupportDate: '', lts: false, lifecycleStage: 'active' });
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
@@ -55,7 +55,7 @@ function AdminEOLPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['eol-products'] });
       setShowNewProduct(false);
-      setNewProduct({ name: '', vendor: '', description: '', categoryId: '', homepageUrl: '', documentationUrl: '' });
+      setNewProduct({ name: '', vendor: '', description: '', categoryId: '', homepageUrl: '', documentationUrl: '', commandGuide: '' });
     },
   });
 
@@ -65,7 +65,7 @@ function AdminEOLPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['eol-products'] });
       setEditingProduct(null);
-      setNewProduct({ name: '', vendor: '', description: '', categoryId: '', homepageUrl: '', documentationUrl: '' });
+      setNewProduct({ name: '', vendor: '', description: '', categoryId: '', homepageUrl: '', documentationUrl: '', commandGuide: '' });
     },
   });
 
@@ -239,8 +239,15 @@ function AdminEOLPage() {
               label="Mô tả"
               value={newProduct.description}
               onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-              rows={3}
+              rows={2}
               placeholder="Mô tả ngắn gọn về sản phẩm..."
+            />
+            <Textarea
+              label="Hướng dẫn câu lệnh (Command Guide)"
+              value={newProduct.commandGuide}
+              onChange={(e) => setNewProduct({ ...newProduct, commandGuide: e.target.value })}
+              rows={3}
+              placeholder="VD: npm install node@, docker pull ubuntu: ..."
             />
             <div className="grid sm:grid-cols-2 gap-4">
               <Input
@@ -271,7 +278,7 @@ function AdminEOLPage() {
                 onClick={() => {
                   setShowNewProduct(false);
                   setEditingProduct(null);
-                  setNewProduct({ name: '', vendor: '', description: '', categoryId: '', homepageUrl: '', documentationUrl: '' });
+                  setNewProduct({ name: '', vendor: '', description: '', categoryId: '', homepageUrl: '', documentationUrl: '', commandGuide: '' });
                 }}
               >
                 Hủy
@@ -317,6 +324,7 @@ function AdminEOLPage() {
                         categoryId: product.categoryId || '',
                         homepageUrl: product.homepageUrl || '',
                         documentationUrl: product.documentationUrl || '',
+                        commandGuide: product.commandGuide || '',
                       });
                       setShowNewProduct(false);
                       window.scrollTo({ top: 0, behavior: 'smooth' });

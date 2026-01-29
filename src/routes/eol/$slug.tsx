@@ -2,6 +2,9 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { getProduct, getVersionsByProduct } from '../../server/functions/eol';
 import { listEOLCategoriesFn } from '../../server/functions/eol-categories';
+import { useState } from 'react';
+import { CopyIcon, TerminalIcon, CheckIcon } from '../../components/icons';
+import { useCopy } from '../../hooks/useCopy';
 
 // Helper functions
 const formatDate = (date: string | null | undefined) => {
@@ -82,6 +85,7 @@ const getStatusBadge = (eolDate: string | null | undefined, extendedSupportDate?
 
 function EOLDetailPage() {
   const { slug } = Route.useParams();
+  const { copiedId, copy: handleCopy } = useCopy();
 
   const { data: productData, isLoading: loadingProduct } = useQuery({
     queryKey: ['eol-product', slug],
@@ -133,10 +137,20 @@ function EOLDetailPage() {
     const days = getDaysUntil(v.eolDate);
     return days === null || days > 0;
   });
+  
   const expiredVersions = versions.filter((v: any) => {
     const days = getDaysUntil(v.eolDate);
     return days !== null && days <= 0;
   });
+
+  const latestVersion = versions.length > 0 
+    ? [...versions].sort((a, b) => {
+        if (!a.releaseDate) return 1;
+        if (!b.releaseDate) return -1;
+        return new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime();
+      })[0]?.versionNumber
+    : null;
+
   const ltsVersions = versions.filter((v: any) => v.lts);
   const expiringSOon = versions.filter((v: any) => {
     const days = getDaysUntil(v.eolDate);
@@ -213,6 +227,52 @@ function EOLDetailPage() {
               </span>
             )}
           </div>
+
+          {product.commandGuide && (
+            <div className="mt-8 relative group">
+              <div className="absolute -inset-1 bg-linear-to-r from-emerald-500 to-teal-600 rounded-xl blur-sm opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+              <div className="relative bg-slate-950 rounded-lg p-4 shadow-2xl border border-white/10">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-1.5 bg-emerald-500/10 rounded-md">
+                      <TerminalIcon size={18} className="text-emerald-500" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                        Quick Start Guide {latestVersion && <span className="text-emerald-500 ml-1">· v{latestVersion}</span>}
+                      </h4>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleCopy(`${product.commandGuide}${latestVersion || ''}`.trim(), 'latest-header')}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all duration-300 ${
+                      copiedId === 'latest-header'
+                        ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]'
+                        : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/5'
+                    }`}
+                  >
+                    {copiedId === 'latest-header' ? (
+                      <>
+                        <CheckIcon size={14} />
+                        <span>COPIED!</span>
+                      </>
+                    ) : (
+                      <>
+                        <CopyIcon size={14} />
+                        <span>COPY COMMAND</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                <div className="font-mono text-sm sm:text-base flex items-center gap-3">
+                  <span className="text-emerald-500/50 select-none shrink-0">$</span>
+                  <code className="text-emerald-400 break-all">
+                    {product.commandGuide}{latestVersion}
+                  </code>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -286,6 +346,9 @@ function EOLDetailPage() {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     Lifecycle
                   </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Lệnh copy
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
@@ -332,6 +395,26 @@ function EOLDetailPage() {
                         >
                           {lifecycle.label}
                         </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        {product.commandGuide && (
+                          <button
+                            onClick={() => handleCopy(`${product.commandGuide}${version.versionNumber}`.trim(), version.id)}
+                            className={`inline-flex items-center gap-2 px-2 py-1 border rounded transition-all duration-200 group/btn ${
+                              copiedId === version.id
+                                ? 'bg-emerald-50 border-emerald-500 text-emerald-600'
+                                : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-500 hover:text-emerald-600 shadow-xs'
+                            }`}
+                            title={`Copy: ${product.commandGuide}${version.versionNumber}`}
+                          >
+                            {copiedId === version.id ? (
+                              <CheckIcon size={12} className="animate-in zoom-in duration-200" />
+                            ) : (
+                              <CopyIcon size={12} className="group-hover/btn:scale-110 transition-transform" />
+                            )}
+                            <span className="text-[10px] font-bold uppercase tracking-tight">{copiedId === version.id ? 'Xong' : 'Copy'}</span>
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );

@@ -4,9 +4,10 @@ import { useState, useMemo } from 'react';
 import { listProducts, getExpiringVersions, createProductFn, updateProductFn, deleteProductFn } from '../server/functions/eol';
 import { listEOLCategoriesFn } from '../server/functions/eol-categories';
 import { getSessionUser } from '../server/functions/auth';
+import { useCopy } from '../hooks/useCopy';
 
 import { Card, Badge, LoadingState, EmptyState, Input, Button, Textarea, Select } from '../components';
-import { GridIcon, ListIcon } from '../components/icons';
+import { GridIcon, ListIcon, CopyIcon, TerminalIcon, CheckIcon } from '../components/icons';
 
 // Helper functions
 const formatDate = (date: string | null | undefined) => {
@@ -40,8 +41,15 @@ function EOLTrackerPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [expiringPage, setExpiringPage] = useState(1);
+  const { copiedId, copy } = useCopy();
   const PRODUCTS_PER_PAGE = 9;
   const EXPIRING_PER_PAGE = 10;
+
+  const handleCopy = (e: React.MouseEvent, text: string, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    copy(text, id);
+  };
 
   const { data: productsData, isLoading: loadingProducts } = useQuery({
     queryKey: ['eol-products'],
@@ -69,6 +77,7 @@ function EOLTrackerPage() {
     categoryId: '',
     homepageUrl: '',
     documentationUrl: '',
+    commandGuide: '',
   });
 
   const { data: authData } = useQuery({
@@ -105,6 +114,7 @@ function EOLTrackerPage() {
       categoryId: '',
       homepageUrl: '',
       documentationUrl: '',
+      commandGuide: '',
     });
     setEditingProduct(null);
   };
@@ -120,6 +130,7 @@ function EOLTrackerPage() {
       categoryId: product.categoryId || '',
       homepageUrl: product.homepageUrl || '',
       documentationUrl: product.documentationUrl || '',
+      commandGuide: product.commandGuide || '',
     });
     setIsModalOpen(true);
   };
@@ -535,6 +546,32 @@ function EOLTrackerPage() {
                     {product.description && (
                       <p className="text-sm text-slate-500 mt-3 line-clamp-2">{product.description}</p>
                     )}
+
+                    {product.commandGuide && (
+                      <div className="mt-4 p-2.5 bg-slate-900 rounded-lg group/cmd relative overflow-hidden ring-1 ring-white/10 shadow-inner">
+                        <div className="flex items-center justify-between mb-1.5 px-0.5">
+                          <div className="flex items-center gap-1.5 text-[10px] font-mono font-medium text-slate-400 uppercase tracking-wider">
+                            <TerminalIcon size={12} className="text-emerald-500" />
+                            <span>Command Guide</span>
+                          </div>
+                          <button
+                            onClick={(e) => handleCopy(e, `${product.commandGuide}${product.latestVersion || ''}`.trim(), product.id)}
+                            className={`p-1 rounded transition-all duration-200 ${copiedId === product.id ? 'bg-emerald-500 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
+                            title="Sao chép lệnh"
+                          >
+                            {copiedId === product.id ? <CheckIcon size={12} /> : <CopyIcon size={12} />}
+                          </button>
+                        </div>
+                        <code className="block text-xs font-mono text-emerald-400 truncate whitespace-nowrap scrollbar-hide pr-2">
+                          $ {product.commandGuide}{product.latestVersion}
+                        </code>
+                        {copiedId === product.id && (
+                          <div className="absolute inset-0 bg-emerald-500/10 backdrop-blur-[1px] flex items-center justify-center animate-in fade-in duration-200">
+                             <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-tight">Copied!</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </Link>
                 );
               })}
@@ -583,6 +620,23 @@ function EOLTrackerPage() {
                         <span>•</span>
                         <span>{product.versionsCount || 0} phiên bản</span>
                       </div>
+                      {product.commandGuide && (
+                        <div className="mt-2 flex items-center gap-2 max-w-md group/cmd">
+                          <div className="flex-1 flex items-center gap-2 px-2 py-1 bg-slate-900 rounded border border-slate-700 overflow-hidden shadow-sm">
+                            <TerminalIcon size={10} className="text-emerald-500 shrink-0" />
+                            <code className="text-[10px] font-mono text-emerald-400 truncate whitespace-nowrap">
+                              {product.commandGuide}{product.latestVersion}
+                            </code>
+                          </div>
+                          <button
+                            onClick={(e) => handleCopy(e, `${product.commandGuide}${product.latestVersion || ''}`.trim(), `list-${product.id}`)}
+                            className={`shrink-0 p-1 rounded border transition-all duration-200 ${copiedId === `list-${product.id}` ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-300'}`}
+                            title="Sao chép lệnh"
+                          >
+                            {copiedId === `list-${product.id}` ? <CheckIcon size={10} /> : <CopyIcon size={10} />}
+                          </button>
+                        </div>
+                      )}
                     </div>
                     {nearestExpiring && urgency && (
                       <div className={`px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 ${urgency.level === 'critical' || urgency.level === 'expired'
@@ -767,6 +821,7 @@ function EOLTrackerPage() {
                   <th className="text-left px-4 py-3 font-semibold text-slate-600">Ngày EOL</th>
                   <th className="text-left px-4 py-3 font-semibold text-slate-600">Còn lại</th>
                   <th className="text-left px-4 py-3 font-semibold text-slate-600">Trạng thái</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600">Lệnh copy</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -822,6 +877,26 @@ function EOLTrackerPage() {
                         >
                           {urgency.text}
                         </Badge>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {version.product?.commandGuide && (
+                          <button
+                            onClick={(e) => handleCopy(e, `${version.product.commandGuide}${version.versionNumber}`.trim(), `table-${version.id}`)}
+                            className={`inline-flex items-center gap-2 px-2 py-1 border rounded transition-all duration-200 group/btn ${
+                              copiedId === `table-${version.id}`
+                                ? 'bg-emerald-50 border-emerald-500 text-emerald-600'
+                                : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-500 hover:text-emerald-600 shadow-xs'
+                            }`}
+                            title={`Copy: ${version.product.commandGuide}${version.versionNumber}`}
+                          >
+                            {copiedId === `table-${version.id}` ? (
+                              <CheckIcon size={12} className="animate-in zoom-in duration-200" />
+                            ) : (
+                              <CopyIcon size={12} className="group-hover/btn:scale-110 transition-transform" />
+                            )}
+                            <span className="text-[10px] font-bold uppercase tracking-tight">{copiedId === `table-${version.id}` ? 'Xong' : 'Copy'}</span>
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );
@@ -978,7 +1053,15 @@ function EOLTrackerPage() {
                 placeholder="Mô tả ngắn gọn về sản phẩm và mục đích sử dụng..."
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={4}
+                rows={2}
+              />
+
+              <Textarea
+                label="Hướng dẫn câu lệnh (Command Guide)"
+                placeholder="VD: npm install node@18, docker pull ubuntu:22.04..."
+                value={formData.commandGuide}
+                onChange={(e) => setFormData({ ...formData, commandGuide: e.target.value })}
+                rows={3}
               />
 
               <div className="pt-6 flex justify-end gap-3 border-t border-slate-100 mt-8">
