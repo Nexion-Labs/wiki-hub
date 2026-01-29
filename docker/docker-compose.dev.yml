@@ -1,0 +1,63 @@
+version: '3.9'
+
+# Development docker-compose for Wiki Hub
+# Usage: docker compose -f docker-compose.dev.yml up
+
+services:
+  # Database
+  database:
+    image: postgres:16-alpine
+    container_name: wiki-database-dev
+    restart: unless-stopped
+    environment:
+
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    networks:
+      - wiki-network-dev
+
+  # Wiki Hub App - Development mode with hot reload
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: wiki-app-dev
+    restart: unless-stopped
+    depends_on:
+      - database
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@database:5432/${DB_NAME:-wikidb}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-key}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    networks:
+      - wiki-network-dev
+    volumes:
+      # Mount source code for hot reload
+      - ./src:/app/src:ro
+      - ./public:/app/public:ro
+      - ./package.json:/app/package.json:ro
+      - ./vite.config.ts:/app/vite.config.ts:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./tailwind.config.js:/app/tailwind.config.js:ro
+      - ./postcss.config.js:/app/postcss.config.js:ro
+    command: [ "bun", "run", "dev", "--host", "0.0.0.0" ]
+
+networks:
+  wiki-network-dev:
+    driver: bridge
+
+volumes:
+  postgres_data_dev:
+    driver: local

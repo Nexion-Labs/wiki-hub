@@ -1,0 +1,1 @@
+ALTER TABLE "eol_products" ADD COLUMN "command_guide" text;
