@@ -1,6 +1,6 @@
-import { seedEOLCategories } from './src/server/db/seeds/eol-categories';
+import { runSeeds } from './src/server/db/seeds';
 
 console.log('Running seeds...');
-await seedEOLCategories();
+await runSeeds();
 console.log('Done!');
 process.exit(0);

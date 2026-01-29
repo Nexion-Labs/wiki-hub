@@ -7,7 +7,7 @@ import { seedEOLCategories } from './eol-categories';
 import { seedWikiPages } from './wiki-pages';
 import { client } from '../client';
 
-const runSeeds = async () => {
+export const runSeeds = async () => {
   console.log('🚀 Starting database seeding...');
   console.log('');
 
@@ -31,4 +31,6 @@ const runSeeds = async () => {
   }
 };
 
-runSeeds();
+if (import.meta.url === `file://${process.argv[1]}`) {
+  runSeeds();
+}
