@@ -1,9 +1,9 @@
-import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { createWikiPageFn } from '../../server/functions/wiki';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { getSessionUser } from '../../server/functions/auth';
-import { Button, Input, Textarea, Card, CardHeader, Alert, LoadingState } from '../../components';
+import { Button, Input, Textarea, Card, Alert, LoadingState, AccessState } from '../../components';
 
 function WikiNewPage() {
   const navigate = useNavigate();
@@ -63,18 +63,10 @@ function WikiNewPage() {
   // Show access denied if not logged in
   if (!user) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Card className="max-w-md w-full text-center" padding="lg">
-          <div className="text-5xl mb-4">🔒</div>
-          <h1 className="text-2xl font-bold text-slate-800">Yêu cầu đăng nhập</h1>
-          <p className="text-slate-500 mt-2 mb-6">
-            Vui lòng đăng nhập để tạo bài viết Wiki mới.
-          </p>
-          <Link to="/login">
-            <Button className="w-full">Đăng nhập ngay</Button>
-          </Link>
-        </Card>
-      </div>
+      <AccessState
+        title="Yêu cầu đăng nhập"
+        description="Vui lòng đăng nhập để tạo bài viết Wiki mới."
+      />
     );
   }
 

@@ -16,6 +16,8 @@ import {
     ConfirmDialog,
     Spinner,
     EmptyState,
+    EditIcon,
+    TrashIcon,
 } from '../components';
 
 function SettingsPage() {
@@ -186,19 +188,25 @@ function SettingsPage() {
                                                         <td className="px-6 py-4 text-slate-500 truncate max-w-xs">
                                                             {category.description || '—'}
                                                         </td>
-                                                        <td className="px-6 py-4 text-right space-x-2">
-                                                            <button
+                                                        <td className="px-6 py-4 text-right flex justify-end gap-2">
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                leftIcon={<EditIcon size={14} />}
                                                                 onClick={() => handleEdit(category)}
-                                                                className="text-emerald-600 hover:text-emerald-700 font-medium"
+                                                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                                                             >
                                                                 Sửa
-                                                            </button>
-                                                            <button
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                leftIcon={<TrashIcon size={14} />}
                                                                 onClick={() => setDeleteCategory(category)}
-                                                                className="text-red-500 hover:text-red-700 font-medium"
+                                                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
                                                             >
                                                                 Xóa
-                                                            </button>
+                                                            </Button>
                                                         </td>
                                                     </tr>
                                                 ))}

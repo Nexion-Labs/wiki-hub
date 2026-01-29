@@ -1,6 +1,7 @@
 // UI Components
 export { Button, type ButtonProps } from './ui/Button';
 export { Input, type InputProps } from './ui/Input';
+export { PasswordInput, type PasswordInputProps } from './ui/PasswordInput';
 export { Textarea, type TextareaProps } from './ui/Textarea';
 export { Select, type SelectProps, type SelectOption } from './ui/Select';
 export { Card, CardHeader, CardContent, CardFooter } from './ui/Card';

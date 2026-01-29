@@ -81,3 +81,27 @@ export const deleteUserFn = createServerFn({ method: 'POST' })
       return { success: false, error: message };
     }
   });
+
+// List all roles
+export const listRolesFn = createServerFn({ method: 'GET' })
+  .handler(async () => {
+    try {
+      const roles = await userService.listRoles();
+      return { success: true, data: roles };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to list roles';
+      return { success: false, error: message, data: [] };
+    }
+  });
+
+// Check username availability
+export const checkUsernameFn = createServerFn({ method: 'GET' })
+  .inputValidator((data: { username: string; excludeUserId?: string }) => data)
+  .handler(async ({ data }) => {
+    try {
+      const available = await userService.isUsernameAvailable(data.username, data.excludeUserId);
+      return { success: true, available };
+    } catch (error) {
+      return { success: false, available: false };
+    }
+  });

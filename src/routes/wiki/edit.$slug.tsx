@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { getWikiPageBySlug, updateWikiPageFn } from '../../server/functions/wiki';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getSessionUser } from '../../server/functions/auth';
-import { Button, Input, Textarea, Card, CardHeader, Alert, LoadingState, Badge } from '../../components';
+import { Button, Input, Textarea, Card, CardHeader, Alert, LoadingState, Badge, AccessState, EditIcon } from '../../components';
 
 function WikiEditPage() {
   const { slug } = Route.useParams();
@@ -28,7 +28,7 @@ function WikiEditPage() {
     queryKey: ['wiki-page', slug],
     queryFn: () => getWikiPageBySlug({ data: { slug } }),
     enabled: !!user, // Only fetch when user is authenticated
-  });
+  }) as any;
 
   useEffect(() => {
     if (data?.success && data.data) {
@@ -45,7 +45,7 @@ function WikiEditPage() {
     setLoading(true);
 
     try {
-      const result = await updateWikiPageFn({
+      const result = (await updateWikiPageFn({
         data: {
           id: data.data.id,
           title,
@@ -54,7 +54,7 @@ function WikiEditPage() {
           editorId: user.id,
           userRole: user.role,
         },
-      });
+      })) as any;
 
       if (result.success && result.data) {
         queryClient.invalidateQueries({ queryKey: ['wiki-pages'] });
@@ -78,18 +78,10 @@ function WikiEditPage() {
   // Show access denied if not logged in
   if (!user) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Card className="max-w-md w-full text-center" padding="lg">
-          <div className="text-5xl mb-4">🔒</div>
-          <h1 className="text-2xl font-bold text-slate-800">Yêu cầu đăng nhập</h1>
-          <p className="text-slate-500 mt-2 mb-6">
-            Vui lòng đăng nhập để chỉnh sửa bài viết Wiki.
-          </p>
-          <Link to="/login">
-            <Button className="w-full">Đăng nhập ngay</Button>
-          </Link>
-        </Card>
-      </div>
+      <AccessState
+        title="Yêu cầu đăng nhập"
+        description="Vui lòng đăng nhập để chỉnh sửa bài viết Wiki."
+      />
     );
   }
 
@@ -120,8 +112,8 @@ function WikiEditPage() {
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-              <span className="text-2xl">Sửa</span>
+            <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600">
+              <EditIcon size={24} />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-slate-800">Chỉnh sửa bài viết</h1>

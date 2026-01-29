@@ -1,10 +1,10 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { listProducts, createProductFn, deleteProductFn, createVersionFn, updateVersionFn, deleteVersionFn, getVersionsByProduct } from '../../server/functions/eol';
 import { listEOLCategoriesFn } from '../../server/functions/eol-categories';
 import { getSessionUser } from '../../server/functions/auth';
-import { Button, Input, Textarea, Select, Card, CardHeader, Badge, Dialog, ConfirmDialog, LoadingState, EmptyState, Alert, AccessState } from '../../components';
+import { Button, Input, Textarea, Select, Card, CardHeader, Badge, ConfirmDialog, LoadingState, EmptyState, AccessState, EditIcon, TrashIcon } from '../../components';
 import { LIFECYCLE_STAGE_OPTIONS } from '../../types/eol';
 
 const ITEMS_PER_PAGE = 10;
@@ -268,7 +268,7 @@ function AdminEOLPage() {
               {/* Product Header */}
               <div className="p-4 border-b border-slate-100 flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center text-2xl">
+                  <div className="w-10 h-10 bg-linear-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center text-2xl">
                     {categories.find((c: any) => c.id === product.categoryId)?.icon || '📦'}
                   </div>
                   <div>
@@ -294,8 +294,9 @@ function AdminEOLPage() {
                   <Button
                     variant="ghost"
                     size="sm"
+                    leftIcon={<TrashIcon size={14} />}
                     onClick={() => setDeleteProductConfirm(product.id)}
-                    className="text-red-600 hover:bg-red-50"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     Xóa
                   </Button>
@@ -741,20 +742,26 @@ function ProductVersions({
                     ) : (
                       <span className="text-slate-400">Chưa có EOL</span>
                     )}
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      leftIcon={<EditIcon size={14} />}
                       onClick={() => onEdit(v)}
-                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded transition-colors"
+                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                       title="Chỉnh sửa"
                     >
                       Sửa
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      leftIcon={<TrashIcon size={14} />}
                       onClick={() => onDelete({ id: v.id, productId: v.productId })}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       title="Xóa"
                     >
-                      Xoá
-                    </button>
+                      Xóa
+                    </Button>
                   </div>
                 </div>
               )}

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { listEOLCategoriesFn, createEOLCategoryFn, updateEOLCategoryFn, deleteEOLCategoryFn } from '../../../server/functions/eol-categories';
 import { getSessionUser } from '../../../server/functions/auth';
-import { Button, Input, Textarea, Card, CardHeader, LoadingState, EmptyState, ConfirmDialog } from '../../../components';
+import { Button, Input, Textarea, Card, CardHeader, LoadingState, EmptyState, ConfirmDialog, EditIcon, TrashIcon } from '../../../components';
 
 export const Route = createFileRoute('/admin/settings/categories')({
     component: AdminCategoriesPage,
@@ -132,8 +132,24 @@ function AdminCategoriesPage() {
                                     <td className="px-6 py-4 text-slate-600 max-w-xs truncate">{cat.description}</td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Button size="sm" variant="ghost" onClick={() => handleEdit(cat)}>Sửa</Button>
-                                            <Button size="sm" variant="ghost" className="text-red-600 hover:bg-red-50" onClick={() => setDeleteConfirm(cat.id)}>Xóa</Button>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                leftIcon={<EditIcon size={14} />}
+                                                onClick={() => handleEdit(cat)}
+                                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                            >
+                                                Sửa
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                leftIcon={<TrashIcon size={14} />}
+                                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                onClick={() => setDeleteConfirm(cat.id)}
+                                            >
+                                                Xóa
+                                            </Button>
                                         </div>
                                     </td>
                                 </tr>
