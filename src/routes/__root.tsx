@@ -188,8 +188,8 @@ function Footer() {
           </div>
           <div className="flex items-center gap-6 text-sm">
             <span>© {new Date().getFullYear()} Wiki Hub</span>
-            <a href="#" className="hover:text-emerald-400 transition-colors">Điều khoản</a>
-            <a href="#" className="hover:text-emerald-400 transition-colors">Bảo mật</a>
+            <a href="/terms" className="hover:text-emerald-400 transition-colors">Điều khoản</a>
+            <a href="/privacy" className="hover:text-emerald-400 transition-colors">Bảo mật</a>
           </div>
         </div>
       </div>
