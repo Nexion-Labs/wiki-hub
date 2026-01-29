@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { listProducts, createProductFn, deleteProductFn, createVersionFn, updateVersionFn, deleteVersionFn, getVersionsByProduct } from '../../../server/functions/eol';
+import { listProducts, createProductFn, updateProductFn, deleteProductFn, createVersionFn, updateVersionFn, deleteVersionFn, getVersionsByProduct } from '../../../server/functions/eol';
 import { listEOLCategoriesFn } from '../../../server/functions/eol-categories';
 import { getSessionUser } from '../../../server/functions/auth';
 import { Button, Input, Textarea, Card, CardHeader, Badge, LoadingState, EmptyState, Alert, Select, ConfirmDialog } from '../../../components';
@@ -12,6 +12,7 @@ const ITEMS_PER_PAGE = 10;
 function AdminEOLPage() {
   const queryClient = useQueryClient();
   const [showNewProduct, setShowNewProduct] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
   const [showNewVersion, setShowNewVersion] = useState<string | null>(null);
   const [editingVersion, setEditingVersion] = useState<any>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; productId: string } | null>(null);
@@ -54,6 +55,16 @@ function AdminEOLPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['eol-products'] });
       setShowNewProduct(false);
+      setNewProduct({ name: '', vendor: '', description: '', categoryId: '', homepageUrl: '', documentationUrl: '' });
+    },
+  });
+
+  const updateProductMutation = useMutation({
+    mutationFn: (data: { id: string; name?: string; vendor?: string; description?: string; categoryId?: string; homepageUrl?: string; documentationUrl?: string }) =>
+      updateProductFn({ data }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['eol-products'] });
+      setEditingProduct(null);
       setNewProduct({ name: '', vendor: '', description: '', categoryId: '', homepageUrl: '', documentationUrl: '' });
     },
   });
@@ -181,17 +192,21 @@ function AdminEOLPage() {
         )}
       </div>
 
-      {/* New Product Form */}
-      {showNewProduct && (
+      {/* New/Edit Product Form */}
+      {(showNewProduct || editingProduct) && (
         <Card className="border-2 border-emerald-200 bg-emerald-50/50">
           <CardHeader
-            title="Thêm phần mềm mới"
-            description="Điền thông tin phần mềm cần theo dõi EOL"
+            title={editingProduct ? "Chỉnh sửa phần mềm" : "Thêm phần mềm mới"}
+            description={editingProduct ? "Cập nhật thông tin phần mềm" : "Điền thông tin phần mềm cần theo dõi EOL"}
           />
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              createProductMutation.mutate(newProduct);
+              if (editingProduct) {
+                updateProductMutation.mutate({ id: editingProduct.id, ...newProduct });
+              } else {
+                createProductMutation.mutate(newProduct);
+              }
             }}
             className="space-y-4 mt-4"
           >
@@ -246,15 +261,16 @@ function AdminEOLPage() {
             <div className="flex gap-3 pt-2">
               <Button
                 type="submit"
-                isLoading={createProductMutation.isPending}
+                isLoading={createProductMutation.isPending || updateProductMutation.isPending}
               >
-                Tạo sản phẩm
+                {editingProduct ? 'Cập nhật sản phẩm' : 'Tạo sản phẩm'}
               </Button>
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => {
                   setShowNewProduct(false);
+                  setEditingProduct(null);
                   setNewProduct({ name: '', vendor: '', description: '', categoryId: '', homepageUrl: '', documentationUrl: '' });
                 }}
               >
@@ -273,7 +289,7 @@ function AdminEOLPage() {
               {/* Product Header */}
               <div className="p-4 border-b border-slate-100 flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center text-2xl">
+                  <div className="w-10 h-10 bg-linear-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center text-2xl">
                     {categories.find((c: any) => c.id === product.categoryId)?.icon || '📦'}
                   </div>
                   <div>
@@ -290,7 +306,26 @@ function AdminEOLPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
-                    variant="outline"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setEditingProduct(product);
+                      setNewProduct({
+                        name: product.name,
+                        vendor: product.vendor || '',
+                        description: product.description || '',
+                        categoryId: product.categoryId || '',
+                        homepageUrl: product.homepageUrl || '',
+                        documentationUrl: product.documentationUrl || '',
+                      });
+                      setShowNewProduct(false);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                  >
+                    Sửa
+                  </Button>
+                  <Button
+                    variant="primary"
                     size="sm"
                     onClick={() => setShowNewVersion(showNewVersion === product.id ? null : product.id)}
                   >
@@ -316,7 +351,7 @@ function AdminEOLPage() {
                     </div>
                   ) : (
                     <Button
-                      variant="ghost"
+                      variant="danger"
                       size="sm"
                       onClick={() => setDeleteConfirm(product.id)}
                       className="text-red-600 hover:bg-red-50"

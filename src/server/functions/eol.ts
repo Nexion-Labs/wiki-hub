@@ -82,6 +82,20 @@ export const createProductFn = createServerFn({ method: 'POST' })
     }
   });
 
+// Update product (admin only)
+export const updateProductFn = createServerFn({ method: 'POST' })
+  .inputValidator((data: { id: string; name?: string; vendor?: string; description?: string; categoryId?: string; homepageUrl?: string; documentationUrl?: string }) => data)
+  .handler(async ({ data }) => {
+    try {
+      const { id, ...updateData } = data;
+      const product = await eolService.updateProduct(id, updateData);
+      return { success: true, data: product };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to update product';
+      return { success: false, error: message, data: null };
+    }
+  });
+
 // Delete product (admin only)
 export const deleteProductFn = createServerFn({ method: 'POST' })
   .inputValidator((data: { id: string }) => data)

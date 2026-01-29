@@ -1,11 +1,11 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useMemo } from 'react';
-import { listProducts, getExpiringVersions } from '../server/functions/eol';
+import { listProducts, getExpiringVersions, createProductFn, updateProductFn, deleteProductFn } from '../server/functions/eol';
 import { listEOLCategoriesFn } from '../server/functions/eol-categories';
 import { getSessionUser } from '../server/functions/auth';
 
-import { Card, Badge, LoadingState, EmptyState, Input, Button } from '../components';
+import { Card, Badge, LoadingState, EmptyState, Input, Button, Textarea, Select } from '../components';
 import { GridIcon, ListIcon } from '../components/icons';
 
 // Helper functions
@@ -58,6 +58,76 @@ function EOLTrackerPage() {
     queryKey: ['eol-categories'],
     queryFn: () => listEOLCategoriesFn(),
   });
+
+  const queryClient = useQueryClient();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    vendor: '',
+    description: '',
+    categoryId: '',
+    homepageUrl: '',
+    documentationUrl: '',
+  });
+
+  const { data: authData } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => getSessionUser(),
+  });
+  const user = (authData?.success ? authData.data : null) as any;
+  const isAdmin = user?.role === 'admin';
+
+  const mutation = useMutation({
+    mutationFn: async (data: any) => {
+      if (editingProduct) {
+        return updateProductFn({ data: { id: editingProduct.id, ...data } });
+      } else {
+        return createProductFn({ data: { ...data, userId: user?.id } });
+      }
+    },
+    onSuccess: (result: any) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: ['eol-products'] });
+        setIsModalOpen(false);
+        resetForm();
+      } else {
+        alert(result.error || 'Operation failed');
+      }
+    },
+  });
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      vendor: '',
+      description: '',
+      categoryId: '',
+      homepageUrl: '',
+      documentationUrl: '',
+    });
+    setEditingProduct(null);
+  };
+
+  const handleEdit = (e: React.MouseEvent, product: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setEditingProduct(product);
+    setFormData({
+      name: product.name,
+      vendor: product.vendor || '',
+      description: product.description || '',
+      categoryId: product.categoryId || '',
+      homepageUrl: product.homepageUrl || '',
+      documentationUrl: product.documentationUrl || '',
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    mutation.mutate(formData);
+  };
 
   const products = (productsData?.success ? productsData.data : []) as any[];
   const expiringVersions = (expiringData?.success ? expiringData.data : []) as any[];
@@ -145,6 +215,15 @@ function EOLTrackerPage() {
           <p className="text-slate-500 mt-1">Theo dõi vòng đời của các sản phẩm công nghệ</p>
         </div>
         <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Button
+              onClick={() => { resetForm(); setIsModalOpen(true); }}
+              className="mr-2"
+              size="sm"
+            >
+              + Thêm sản phẩm
+            </Button>
+          )}
           <button
             onClick={() => setViewMode('grid')}
             className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
@@ -408,9 +487,22 @@ function EOLTrackerPage() {
                           )}
                         </div>
                       </div>
-                      <span className="text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                        ⟶
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {isAdmin && (
+                          <button
+                            onClick={(e) => handleEdit(e, product)}
+                            className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors z-10"
+                            title="Chỉnh sửa sản phẩm"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                        )}
+                        <span className="text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                          ⟶
+                        </span>
+                      </div>
                     </div>
                     {/* Product Stats */}
                     <div className="mt-3 pt-3 border-t border-slate-200 grid grid-cols-2 gap-2 text-xs">
@@ -510,7 +602,20 @@ function EOLTrackerPage() {
                         {categoryMap.get(product.categoryId)?.name || 'Unknown'}
                       </span>
                     )}
-                    <span className="text-emerald-600">⟶</span>
+                    <div className="flex items-center gap-3">
+                      {isAdmin && (
+                        <button
+                          onClick={(e) => handleEdit(e, product)}
+                          className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors z-10"
+                          title="Chỉnh sửa sản phẩm"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                      )}
+                      <span className="text-emerald-600">⟶</span>
+                    </div>
                   </Link>
                 );
               })}
@@ -796,6 +901,105 @@ function EOLTrackerPage() {
             </div>
           )}
         </Card>
+      )}
+
+      {/* Add/Edit Product Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-slate-200">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <div>
+                <h3 className="text-xl font-bold text-slate-800">
+                  {editingProduct ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}
+                </h3>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  {editingProduct ? 'Cập nhật thông tin chi tiết của sản phẩm' : 'Tạo mục mới để bắt đầu theo dõi vòng đời'}
+                </p>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+              {mutation.isError && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                  Lỗi: {(mutation.error as any)?.message || 'Có lỗi xảy ra'}
+                </div>
+              )}
+
+              <div className="grid md:grid-cols-2 gap-5">
+                <Input
+                  label="Tên sản phẩm *"
+                  placeholder="Ví dụ: Node.js, Ubuntu, Docker..."
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                />
+                <Input
+                  label="Nhà phát hành"
+                  placeholder="Ví dụ: Microsoft, Amazon, OpenSource..."
+                  value={formData.vendor}
+                  onChange={(e) => setFormData({ ...formData, vendor: e.target.value })}
+                />
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-5">
+                <Select
+                  label="Danh mục *"
+                  placeholder="Chọn danh mục"
+                  value={formData.categoryId}
+                  onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                  required
+                  options={categories.map((c: any) => ({ value: c.id, label: c.name, icon: c.icon }))}
+                />
+                <Input
+                  label="Link trang chủ"
+                  placeholder="https://..."
+                  value={formData.homepageUrl}
+                  onChange={(e) => setFormData({ ...formData, homepageUrl: e.target.value })}
+                />
+              </div>
+
+              <Input
+                label="Link tài liệu (Documentation)"
+                placeholder="https://..."
+                value={formData.documentationUrl}
+                onChange={(e) => setFormData({ ...formData, documentationUrl: e.target.value })}
+              />
+
+              <Textarea
+                label="Mô tả sản phẩm"
+                placeholder="Mô tả ngắn gọn về sản phẩm và mục đích sử dụng..."
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={4}
+              />
+
+              <div className="pt-6 flex justify-end gap-3 border-t border-slate-100 mt-8">
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Hủy bỏ
+                </Button>
+                <Button
+                  type="submit"
+                  isLoading={mutation.isPending}
+                  className="px-8"
+                >
+                  {editingProduct ? 'Cập nhật sản phẩm' : 'Lưu sản phẩm'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
